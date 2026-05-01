@@ -1,207 +1,210 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SectionHeader } from "@/components/sections/SectionHeader";
-import { toast } from "@/hooks/use-toast";
-import { Check, Flame } from "lucide-react";
+import { Flame } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-const practices = [
-  { id: "oracao", icon: "🙏", label: "Oração" },
-  { id: "meditacao", icon: "🧘", label: "Meditação" },
-  { id: "afirmacao", icon: "✨", label: "Afirmação Positiva" },
-  { id: "leitura", icon: "📚", label: "Leitura" },
-  { id: "gratidao", icon: "🙌", label: "Gratidão" },
-  { id: "visualizacao", icon: "🌟", label: "Visualizações" },
-  { id: "atividade", icon: "🏃", label: "Atividade Física" },
-  { id: "diario", icon: "📓", label: "Diário" },
-];
+import { PRACTICES, PRACTICE_IDS, STORAGE_KEYS } from "@/features/tools/constants";
+import { useDailyDone, usePracticesConfig, useStreak } from "@/features/tools/hooks/usePractices";
+import { readLS } from "@/features/tools/hooks/useLocalStorage";
+import type { PracticeId } from "@/features/tools/types";
+import { PracticeCard } from "@/features/tools/components/PracticeCard";
+import { RoutineBuilder } from "@/features/tools/components/RoutineBuilder";
 
-const STORAGE_KEY = "essenvia_habits_v1";
-const todayKey = () => new Date().toISOString().slice(0, 10);
-
-type Store = Record<string, string[]>; // dateKey -> [practiceId]
-
-const loadStore = (): Store => {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch { return {}; }
-};
+import { PrayerPractice } from "@/features/tools/practices/PrayerPractice";
+import { AffirmationsPractice } from "@/features/tools/practices/AffirmationsPractice";
+import { GratitudePractice } from "@/features/tools/practices/GratitudePractice";
+import { PhysicalPractice } from "@/features/tools/practices/PhysicalPractice";
+import { MeditationPractice } from "@/features/tools/practices/MeditationPractice";
+import { ReadingPractice } from "@/features/tools/practices/ReadingPractice";
+import { VisualizationPractice } from "@/features/tools/practices/VisualizationPractice";
+import { DiaryPractice } from "@/features/tools/practices/DiaryPractice";
 
 const Ferramentas = () => {
-  const [store, setStore] = useState<Store>({});
-  const [now, setNow] = useState(new Date());
+  const { cfg, update } = usePracticesConfig();
+  const { done, toggle } = useDailyDone();
+  const streak = useStreak();
+  const [open, setOpen] = useState<PracticeId | null>(null);
+  const [now] = useState(new Date());
 
-  useEffect(() => { setStore(loadStore()); }, []);
-  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }, [store]);
-
-  const today = todayKey();
-  const todayDone = store[today] || [];
-
-  const toggle = (id: string) => {
-    setStore((prev) => {
-      const cur = prev[today] || [];
-      const next = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id];
-      const newStore = { ...prev, [today]: next };
-      const p = practices.find((x) => x.id === id)!;
-      if (!cur.includes(id)) {
-        toast({ title: `${p.icon} ${p.label}`, description: "Prática registrada. Continue assim!" });
-        if (next.length === practices.length) {
-          setTimeout(() => toast({ title: "🌟 Dia completo!", description: "Você completou todas as práticas hoje!" }), 400);
-        }
+  const handleToggle = (id: PracticeId) => {
+    const wasDone = done.includes(id);
+    toggle(id);
+    const meta = PRACTICES.find((p) => p.id === id)!;
+    if (!wasDone) {
+      toast.success(`${meta.icon} ${meta.label} concluída!`);
+      const newCount = done.length + 1;
+      if (newCount === PRACTICE_IDS.length) {
+        setTimeout(() => toast.success("🌟 Você completou todas as práticas hoje!", { duration: 5000 }), 400);
       }
-      return newStore;
-    });
+    }
   };
 
-  const progress = (todayDone.length / practices.length) * 100;
-
-  const streak = useMemo(() => {
-    let s = 0;
-    const d = new Date();
-    while (true) {
-      const k = d.toISOString().slice(0, 10);
-      if ((store[k] || []).length === practices.length) {
-        s++;
-        d.setDate(d.getDate() - 1);
-      } else break;
-    }
-    return s;
-  }, [store]);
+  const progress = (done.length / PRACTICE_IDS.length) * 100;
 
   // Month calendar
   const year = now.getFullYear();
   const month = now.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const monthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const firstWeekday = new Date(year, month, 1).getDay();
 
   const dayStatus = (day: number) => {
     const k = new Date(year, month, day).toISOString().slice(0, 10);
-    const done = (store[k] || []).length;
-    if (done === practices.length) return "full";
-    if (done > 0) return "partial";
+    const arr = readLS<PracticeId[]>(STORAGE_KEYS.daily(k), []);
+    if (arr.length === PRACTICE_IDS.length) return "full";
+    if (arr.length > 0) return "partial";
     return "empty";
   };
 
-  // Weekly summary (last 7 days)
   const week = useMemo(() => {
-    const out: { label: string; count: number }[] = [];
+    const out: { label: string; count: number; date: string }[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const k = d.toISOString().slice(0, 10);
-      out.push({ label: d.toLocaleDateString("pt-BR", { weekday: "short" }).slice(0, 3), count: (store[k] || []).length });
+      out.push({
+        label: d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "").slice(0, 3),
+        count: readLS<PracticeId[]>(STORAGE_KEYS.daily(k), []).length,
+        date: k,
+      });
     }
     return out;
-  }, [store]);
+  }, [done]);
 
   return (
     <>
-      <section className="py-16 md:py-24 bg-gradient-soft">
+      <section className="py-12 md:py-20 bg-gradient-soft">
         <div className="container">
-          <SectionHeader eyebrow="Ferramentas" title="Sua rotina diária consciente" subtitle="Pequenos passos diários, todos os dias. É assim que se constrói uma vida nova." />
+          <SectionHeader
+            eyebrow="Ferramentas"
+            title="Sua rotina diária consciente"
+            subtitle="Pequenos passos diários, todos os dias. É assim que se constrói uma vida nova."
+          />
         </div>
       </section>
 
-      <section className="pb-24 -mt-10">
-        <div className="container grid lg:grid-cols-3 gap-8">
-          {/* Practices checklist */}
-          <Card className="lg:col-span-2 p-8 bg-card shadow-soft border-bege">
-            <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
-              <div>
-                <h3 className="font-display text-2xl text-verde-profundo">Práticas de hoje</h3>
-                <p className="text-sm text-muted-foreground">{todayDone.length} de {practices.length} práticas concluídas</p>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-dourado/15 text-verde-profundo">
-                <Flame className="w-4 h-4 text-dourado" />
-                <span className="font-semibold text-sm">{streak} {streak === 1 ? "dia" : "dias"} seguidos</span>
-              </div>
-            </div>
+      <section className="pb-24 -mt-6">
+        <div className="container">
+          <Tabs defaultValue="praticas" className="w-full">
+            <TabsList className="bg-bege border border-bege mb-8">
+              <TabsTrigger value="praticas">🌿 Práticas</TabsTrigger>
+              <TabsTrigger value="rotina">📅 Minha Rotina</TabsTrigger>
+            </TabsList>
 
-            <div className="h-3 bg-bege rounded-full overflow-hidden mb-8">
-              <div className="h-full bg-gradient-gold transition-all duration-500" style={{ width: `${progress}%` }} />
-            </div>
+            <TabsContent value="praticas" className="space-y-8">
+              <div className="grid lg:grid-cols-10 gap-6">
+                {/* LEFT 70% */}
+                <div className="lg:col-span-7 space-y-6">
+                  <Card className="p-6 md:p-8 bg-card shadow-soft border-bege">
+                    <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+                      <div>
+                        <h3 className="font-display text-2xl text-verde-profundo">Práticas de Hoje</h3>
+                        <p className="text-sm text-muted-foreground">{done.length} de {PRACTICE_IDS.length} práticas concluídas</p>
+                      </div>
+                      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-dourado/15 text-verde-profundo">
+                        <Flame className="w-4 h-4 text-dourado" />
+                        <span className="font-semibold text-sm">{streak} {streak === 1 ? "dia" : "dias"} seguidos</span>
+                      </div>
+                    </div>
 
-            <div className="grid sm:grid-cols-2 gap-3">
-              {practices.map((p) => {
-                const done = todayDone.includes(p.id);
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => toggle(p.id)}
-                    className={cn(
-                      "flex items-center gap-4 p-4 rounded-xl border text-left transition-smooth",
-                      done ? "bg-verde-profundo/5 border-verde-medio" : "bg-bege-claro border-bege hover:border-dourado"
+                    <div className="h-3 bg-bege rounded-full overflow-hidden mb-8">
+                      <div className="h-full bg-gradient-gold transition-all duration-500" style={{ width: `${progress}%` }} />
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {PRACTICES.map((p) => (
+                        <PracticeCard
+                          key={p.id}
+                          meta={p}
+                          done={done.includes(p.id)}
+                          active={cfg[p.id].active}
+                          scheduleLabel={`${cfg[p.id].startTime} – ${cfg[p.id].endTime}`}
+                          onToggle={() => handleToggle(p.id)}
+                          onOpen={() => setOpen(p.id)}
+                        />
+                      ))}
+                    </div>
+
+                    {done.length === PRACTICE_IDS.length && (
+                      <div className="mt-6 p-4 rounded-xl bg-gradient-gold text-verde-profundo text-center font-semibold animate-fade-in">
+                        🌟 Você completou todas as práticas hoje!
+                      </div>
                     )}
-                  >
-                    <span className="text-2xl">{p.icon}</span>
-                    <span className="flex-1 font-medium text-verde-profundo">{p.label}</span>
-                    <span className={cn(
-                      "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-smooth",
-                      done ? "bg-verde-medio border-verde-medio scale-110" : "border-bege"
-                    )}>
-                      {done && <Check className="w-4 h-4 text-bege-claro animate-scale-in" />}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {todayDone.length === practices.length && (
-              <div className="mt-6 p-4 rounded-xl bg-gradient-gold text-verde-profundo text-center font-semibold animate-fade-in">
-                🌟 Você completou todas as práticas hoje!
-              </div>
-            )}
-          </Card>
-
-          {/* Weekly chart */}
-          <Card className="p-8 bg-card shadow-soft border-bege">
-            <h3 className="font-display text-2xl text-verde-profundo mb-6">Últimos 7 dias</h3>
-            <div className="flex items-end justify-between gap-2 h-40">
-              {week.map((d, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                  <div className="w-full flex-1 flex items-end">
-                    <div
-                      className="w-full bg-gradient-to-t from-verde-profundo to-verde-medio rounded-t transition-all"
-                      style={{ height: `${(d.count / practices.length) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-muted-foreground capitalize">{d.label}</span>
+                  </Card>
                 </div>
-              ))}
-            </div>
-          </Card>
 
-          {/* Calendar */}
-          <Card className="lg:col-span-3 p-8 bg-card shadow-soft border-bege">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-display text-2xl text-verde-profundo capitalize">
-                {now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
-              </h3>
-              <div className="flex gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm bg-verde-medio" />Completo</span>
-                <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm bg-dourado/60" />Parcial</span>
-                <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm bg-bege" />Vazio</span>
+                {/* RIGHT 30% */}
+                <div className="lg:col-span-3 space-y-6">
+                  <Card className="p-6 bg-card shadow-soft border-bege">
+                    <h3 className="font-display text-xl text-verde-profundo mb-4">Últimos 7 dias</h3>
+                    <div className="flex items-end justify-between gap-2 h-32">
+                      {week.map((d, i) => (
+                        <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                          <div className="w-full flex-1 flex items-end">
+                            <div
+                              className="w-full bg-gradient-to-t from-verde-profundo to-verde-medio rounded-t transition-all"
+                              style={{ height: `${(d.count / PRACTICE_IDS.length) * 100}%`, minHeight: d.count > 0 ? "4px" : "0" }}
+                            />
+                          </div>
+                          <span className="text-[10px] text-muted-foreground capitalize">{d.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  <Card className="p-6 bg-card shadow-soft border-bege">
+                    <h3 className="font-display text-lg text-verde-profundo capitalize mb-4">
+                      {now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+                    </h3>
+                    <div className="grid grid-cols-7 gap-1 mb-2 text-[10px] text-muted-foreground text-center">
+                      {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => <div key={i}>{d}</div>)}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {Array.from({ length: firstWeekday }).map((_, i) => <div key={`pad-${i}`} />)}
+                      {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
+                        const st = dayStatus(d);
+                        const isToday = d === now.getDate();
+                        return (
+                          <div key={d} className={cn(
+                            "aspect-square rounded-md flex items-center justify-center text-xs font-medium",
+                            st === "full" && "bg-verde-medio text-bege-claro",
+                            st === "partial" && "bg-dourado/40 text-verde-profundo",
+                            st === "empty" && "bg-bege/60 text-verde-profundo/50",
+                            isToday && "ring-2 ring-dourado"
+                          )}>{d}</div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-3 text-[10px] text-muted-foreground">
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-verde-medio" />Completo</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-dourado/60" />Parcial</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-bege" />Vazio</span>
+                    </div>
+                  </Card>
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-7 gap-2">
-              {monthDays.map((d) => {
-                const st = dayStatus(d);
-                return (
-                  <div
-                    key={d}
-                    className={cn(
-                      "aspect-square rounded-lg flex items-center justify-center text-sm font-medium",
-                      st === "full" && "bg-verde-medio text-bege-claro",
-                      st === "partial" && "bg-dourado/40 text-verde-profundo",
-                      st === "empty" && "bg-bege text-verde-profundo/50"
-                    )}
-                  >
-                    {d}
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
+            </TabsContent>
+
+            <TabsContent value="rotina">
+              <Card className="p-6 md:p-8 bg-card shadow-soft border-bege">
+                <RoutineBuilder practicesCfg={cfg} />
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
+
+      {/* Drawers */}
+      <PrayerPractice open={open === "oracao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.oracao} onChange={(p) => update("oracao", p)} />
+      <AffirmationsPractice open={open === "afirmacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.afirmacao} onChange={(p) => update("afirmacao", p)} />
+      <GratitudePractice open={open === "gratidao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.gratidao} onChange={(p) => update("gratidao", p)} />
+      <PhysicalPractice open={open === "atividade"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.atividade} onChange={(p) => update("atividade", p)} />
+      <MeditationPractice open={open === "meditacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.meditacao} onChange={(p) => update("meditacao", p)} />
+      <ReadingPractice open={open === "leitura"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.leitura} onChange={(p) => update("leitura", p)} />
+      <VisualizationPractice open={open === "visualizacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.visualizacao} onChange={(p) => update("visualizacao", p)} />
+      <DiaryPractice open={open === "diario"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.diario} onChange={(p) => update("diario", p)} />
     </>
   );
 };
