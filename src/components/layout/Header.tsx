@@ -37,7 +37,7 @@ export const Header = () => {
       )}
     >
       <div className="container flex items-center justify-between h-28 md:h-32">
-        <Link to="/" className="flex items-center gap-3 py-2">
+        <Link to="/" className="flex items-center gap-1 py-2">
           <img
             src="/logo.png"
             alt="Nova Essenvia"
