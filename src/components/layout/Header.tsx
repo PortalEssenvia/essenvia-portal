@@ -43,6 +43,9 @@ export const Header = () => {
             alt="Nova Essenvia"
             className="h-24 md:h-32 lg:h-36 w-auto object-contain"
           />
+          <span className="font-serif text-xl md:text-2xl lg:text-3xl font-semibold tracking-wide text-verde-profundo leading-none">
+            NOVA ESSENVIA
+          </span>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">
