@@ -17,12 +17,14 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   data: GratitudeData;
   onChange: (patch: Partial<GratitudeData>) => void;
+  done?: boolean;
+  onComplete?: () => void;
 }
 
 const meta = PRACTICES.find((p) => p.id === "gratidao")!;
 const dailyKey = (d: string) => `essenvia_gratitude_daily_${d}`;
 
-export function GratitudePractice({ open, onOpenChange, data, onChange }: Props) {
+export function GratitudePractice({ open, onOpenChange, data, onChange, done, onComplete }: Props) {
   const [newItem, setNewItem] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -45,7 +47,7 @@ export function GratitudePractice({ open, onOpenChange, data, onChange }: Props)
   }, [open, today]);
 
   return (
-    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })}>
+    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })} done={done} onComplete={onComplete}>
       <ScheduleConfig startTime={data.startTime} endTime={data.endTime} days={data.days} onChange={(p) => onChange(p)} />
 
       <Section title="Sou grato por...">

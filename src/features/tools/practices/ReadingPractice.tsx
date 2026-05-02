@@ -17,11 +17,13 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   data: ReadingData;
   onChange: (patch: Partial<ReadingData>) => void;
+  done?: boolean;
+  onComplete?: () => void;
 }
 
 const meta = PRACTICES.find((p) => p.id === "leitura")!;
 
-export function ReadingPractice({ open, onOpenChange, data, onChange }: Props) {
+export function ReadingPractice({ open, onOpenChange, data, onChange, done, onComplete }: Props) {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [pages, setPages] = useState(0);
@@ -44,7 +46,7 @@ export function ReadingPractice({ open, onOpenChange, data, onChange }: Props) {
   };
 
   return (
-    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })}>
+    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })} done={done} onComplete={onComplete}>
       <ScheduleConfig startTime={data.startTime} endTime={data.endTime} days={data.days} onChange={(p) => onChange(p)} />
 
       {data.current ? (

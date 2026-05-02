@@ -19,6 +19,8 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   data: DiaryData;
   onChange: (patch: Partial<DiaryData>) => void;
+  done?: boolean;
+  onComplete?: () => void;
 }
 
 const meta = PRACTICES.find((p) => p.id === "diario")!;
@@ -35,7 +37,7 @@ function loadAllEntries(): DiaryEntry[] {
   return out.sort((a, b) => b.date.localeCompare(a.date));
 }
 
-export function DiaryPractice({ open, onOpenChange, data, onChange }: Props) {
+export function DiaryPractice({ open, onOpenChange, data, onChange, done, onComplete }: Props) {
   const today = todayKey();
   const todayKeyLS = STORAGE_KEYS.diary(today);
   const [entry, setEntry] = useState<DiaryEntry>(() => readLS(todayKeyLS, { date: today, text: "", answers: {} as DiaryAnswers }));
@@ -56,7 +58,7 @@ export function DiaryPractice({ open, onOpenChange, data, onChange }: Props) {
   const filtered = history.filter((h) => !search || h.text.toLowerCase().includes(search.toLowerCase()) || h.date.includes(search));
 
   return (
-    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })}>
+    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })} done={done} onComplete={onComplete}>
       <ScheduleConfig startTime={data.startTime} endTime={data.endTime} days={data.days} onChange={(p) => onChange(p)} />
 
       <Section title={`📓 ${formatDateBR(today)}`}>

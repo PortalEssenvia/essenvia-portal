@@ -19,6 +19,8 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   data: VisualizationData;
   onChange: (patch: Partial<VisualizationData>) => void;
+  done?: boolean;
+  onComplete?: () => void;
 }
 
 const meta = PRACTICES.find((p) => p.id === "visualizacao")!;
@@ -116,14 +118,14 @@ function VisualizationRow({ v, onUpdate, onDelete, onPlay }: { v: VisualizationI
   );
 }
 
-export function VisualizationPractice({ open, onOpenChange, data, onChange }: Props) {
+export function VisualizationPractice({ open, onOpenChange, data, onChange, done, onComplete }: Props) {
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [playing, setPlaying] = useState<VisualizationItem | null>(null);
 
   return (
-    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })}>
+    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })} done={done} onComplete={onComplete}>
       <ScheduleConfig startTime={data.startTime} endTime={data.endTime} days={data.days} onChange={(p) => onChange(p)} />
 
       <Section title="Minhas Visualizações" action={<Button size="sm" variant="outline" onClick={() => setAdding(true)}>+ Adicionar</Button>}>
