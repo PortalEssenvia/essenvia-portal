@@ -26,7 +26,7 @@ const Comunidade = () => {
           <p className="text-xs tracking-[0.3em] uppercase text-dourado mb-3">Em breve</p>
           <h1 className="font-display text-4xl md:text-5xl text-verde-profundo mb-5">Um espaço seguro para crescer junto</h1>
           <p className="text-muted-foreground mb-10 max-w-xl mx-auto">
-            A Comunidade Essenvia é um lugar para compartilhar, se apoiar e celebrar cada passo da transformação.
+            A Comunidade Nova Essenvia é um lugar para compartilhar, se apoiar e celebrar cada passo da transformação.
             Entre na lista e seja avisado em primeira mão.
           </p>
           <form onSubmit={submit} className="grid sm:grid-cols-2 gap-3 max-w-xl mx-auto">

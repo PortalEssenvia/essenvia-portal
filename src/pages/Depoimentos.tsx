@@ -13,7 +13,7 @@ const stats = [
 const testimonials = [
   { name: "Mariana S.", city: "São Paulo, SP", text: "A primeira vez que entendi por que eu repetia os mesmos padrões. Mudou tudo.", phase: "Despertar" },
   { name: "Rafael C.", city: "Belo Horizonte, MG", text: "Larguei um vício de 12 anos em 60 dias. Não foi mágica — foi método.", phase: "Libertar" },
-  { name: "Ana Paula", city: "Curitiba, PR", text: "Voltei a ter rotina, sono, presença. A Essenvia me devolveu a mim.", phase: "Reprogramar" },
+  { name: "Ana Paula", city: "Curitiba, PR", text: "Voltei a ter rotina, sono, presença. A Nova Essenvia me devolveu a mim.", phase: "Reprogramar" },
   { name: "Lucas M.", city: "Rio de Janeiro, RJ", text: "Não é mais um curso. É um caminho. Estou no melhor momento da minha vida.", phase: "Sustentar" },
   { name: "Juliana T.", city: "Recife, PE", text: "Eu não sabia o que era estar presente. Hoje vivo cada respiração com mais sentido.", phase: "Despertar" },
   { name: "Carlos H.", city: "Porto Alegre, RS", text: "Disciplina deixou de ser sofrimento. Hoje minha rotina me sustenta.", phase: "Reprogramar" },

@@ -37,9 +37,9 @@ const benefits = [
 ];
 
 const testimonials = [
-  { name: "Mariana S.", city: "São Paulo, SP", text: "Eu tentei tudo. A Essenvia foi a primeira vez que entendi por quê. Hoje minha rotina é leve e real." },
+  { name: "Mariana S.", city: "São Paulo, SP", text: "Eu tentei tudo. A Nova Essenvia foi a primeira vez que entendi por quê. Hoje minha rotina é leve e real." },
   { name: "Rafael C.", city: "Belo Horizonte, MG", text: "Em 60 dias consegui largar um vício de 12 anos. O método me deu um caminho, não só motivação." },
-  { name: "Ana Paula", city: "Curitiba, PR", text: "Voltei a meditar, dormir bem, me sentir presente. A Essenvia me devolveu para mim mesma." },
+  { name: "Ana Paula", city: "Curitiba, PR", text: "Voltei a meditar, dormir bem, me sentir presente. A Nova Essenvia me devolveu para mim mesma." },
 ];
 
 const Home = () => {
@@ -83,7 +83,7 @@ const Home = () => {
       {/* PILARES */}
       <section className="py-24 bg-gradient-soft">
         <div className="container">
-          <SectionHeader eyebrow="O que é a Essenvia" title="Um sistema de transformação guiada" subtitle="Não somos mais um blog de autoajuda. Unimos espiritualidade, ciência e práticas terapêuticas para tratar a raiz dos conflitos." />
+          <SectionHeader eyebrow="O que é a Nova Essenvia" title="Um sistema de transformação guiada" subtitle="Não somos mais um blog de autoajuda. Unimos espiritualidade, ciência e práticas terapêuticas para tratar a raiz dos conflitos." />
           <div className="grid md:grid-cols-3 gap-8 mt-16">
             {pillars.map((p) => (
               <Card key={p.title} className="p-8 text-center bg-card shadow-card hover:shadow-soft transition-smooth border-bege">
@@ -101,7 +101,7 @@ const Home = () => {
       {/* MÉTODO PREVIEW */}
       <section className="py-24 bg-bege-claro">
         <div className="container">
-          <SectionHeader eyebrow="O Método Essenvia" title="Quatro fases para uma vida nova" />
+          <SectionHeader eyebrow="O Método Nova Essenvia" title="Quatro fases para uma vida nova" />
           <div className="grid md:grid-cols-4 gap-6 mt-16">
             {phases.map((ph) => (
               <div key={ph.title} className="relative bg-card rounded-2xl p-6 shadow-card hover:-translate-y-1 transition-smooth">
