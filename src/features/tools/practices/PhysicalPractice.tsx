@@ -18,6 +18,8 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   data: PhysicalData;
   onChange: (patch: Partial<PhysicalData>) => void;
+  done?: boolean;
+  onComplete?: () => void;
 }
 
 const meta = PRACTICES.find((p) => p.id === "atividade")!;
@@ -69,7 +71,7 @@ function ActivityRow({ a, onUpdate, onDelete }: { a: PhysicalActivity; onUpdate:
   );
 }
 
-export function PhysicalPractice({ open, onOpenChange, data, onChange }: Props) {
+export function PhysicalPractice({ open, onOpenChange, data, onChange, done, onComplete }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   const [duration, setDuration] = useState(30);
@@ -79,7 +81,7 @@ export function PhysicalPractice({ open, onOpenChange, data, onChange }: Props) 
     onChange({ activities: [...data.activities, { id: uid(), ...a }] });
 
   return (
-    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })}>
+    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })} done={done} onComplete={onComplete}>
       <ScheduleConfig startTime={data.startTime} endTime={data.endTime} days={data.days} onChange={(p) => onChange(p)} />
 
       <Section title="Minhas Atividades" action={<Button size="sm" variant="outline" onClick={() => setAdding(true)}>+ Adicionar</Button>}>

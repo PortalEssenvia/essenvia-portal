@@ -24,7 +24,7 @@ import { DiaryPractice } from "@/features/tools/practices/DiaryPractice";
 
 const Ferramentas = () => {
   const { cfg, update } = usePracticesConfig();
-  const { done, toggle } = useDailyDone();
+  const { done, toggle, mark } = useDailyDone();
   const streak = useStreak();
   const [open, setOpen] = useState<PracticeId | null>(null);
   const [now] = useState(new Date());
@@ -39,6 +39,17 @@ const Ferramentas = () => {
       if (newCount === PRACTICE_IDS.length) {
         setTimeout(() => toast.success("🌟 Você completou todas as práticas hoje!", { duration: 5000 }), 400);
       }
+    }
+  };
+
+  const handleComplete = (id: PracticeId) => {
+    if (done.includes(id)) return;
+    mark(id);
+    const meta = PRACTICES.find((p) => p.id === id)!;
+    toast.success(`${meta.icon} ${meta.label} concluída!`);
+    const newCount = done.length + 1;
+    if (newCount === PRACTICE_IDS.length) {
+      setTimeout(() => toast.success("🌟 Você completou todas as práticas hoje!", { duration: 5000 }), 400);
     }
   };
 
@@ -197,14 +208,14 @@ const Ferramentas = () => {
       </section>
 
       {/* Drawers */}
-      <PrayerPractice open={open === "oracao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.oracao} onChange={(p) => update("oracao", p)} />
-      <AffirmationsPractice open={open === "afirmacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.afirmacao} onChange={(p) => update("afirmacao", p)} />
-      <GratitudePractice open={open === "gratidao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.gratidao} onChange={(p) => update("gratidao", p)} />
-      <PhysicalPractice open={open === "atividade"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.atividade} onChange={(p) => update("atividade", p)} />
-      <MeditationPractice open={open === "meditacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.meditacao} onChange={(p) => update("meditacao", p)} />
-      <ReadingPractice open={open === "leitura"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.leitura} onChange={(p) => update("leitura", p)} />
-      <VisualizationPractice open={open === "visualizacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.visualizacao} onChange={(p) => update("visualizacao", p)} />
-      <DiaryPractice open={open === "diario"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.diario} onChange={(p) => update("diario", p)} />
+      <PrayerPractice open={open === "oracao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.oracao} onChange={(p) => update("oracao", p)} done={done.includes("oracao")} onComplete={() => handleComplete("oracao")} />
+      <AffirmationsPractice open={open === "afirmacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.afirmacao} onChange={(p) => update("afirmacao", p)} done={done.includes("afirmacao")} onComplete={() => handleComplete("afirmacao")} />
+      <GratitudePractice open={open === "gratidao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.gratidao} onChange={(p) => update("gratidao", p)} done={done.includes("gratidao")} onComplete={() => handleComplete("gratidao")} />
+      <PhysicalPractice open={open === "atividade"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.atividade} onChange={(p) => update("atividade", p)} done={done.includes("atividade")} onComplete={() => handleComplete("atividade")} />
+      <MeditationPractice open={open === "meditacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.meditacao} onChange={(p) => update("meditacao", p)} done={done.includes("meditacao")} onComplete={() => handleComplete("meditacao")} />
+      <ReadingPractice open={open === "leitura"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.leitura} onChange={(p) => update("leitura", p)} done={done.includes("leitura")} onComplete={() => handleComplete("leitura")} />
+      <VisualizationPractice open={open === "visualizacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.visualizacao} onChange={(p) => update("visualizacao", p)} done={done.includes("visualizacao")} onComplete={() => handleComplete("visualizacao")} />
+      <DiaryPractice open={open === "diario"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.diario} onChange={(p) => update("diario", p)} done={done.includes("diario")} onComplete={() => handleComplete("diario")} />
     </>
   );
 };

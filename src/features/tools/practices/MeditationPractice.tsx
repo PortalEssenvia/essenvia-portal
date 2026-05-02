@@ -19,6 +19,8 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   data: MeditationData;
   onChange: (patch: Partial<MeditationData>) => void;
+  done?: boolean;
+  onComplete?: () => void;
 }
 
 const meta = PRACTICES.find((p) => p.id === "meditacao")!;
@@ -116,14 +118,14 @@ function MeditationRow({ m, onUpdate, onDelete }: { m: MeditationItem; onUpdate:
   );
 }
 
-export function MeditationPractice({ open, onOpenChange, data, onChange }: Props) {
+export function MeditationPractice({ open, onOpenChange, data, onChange, done, onComplete }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   const [duration, setDuration] = useState(10);
   const [type, setType] = useState<MeditationType>("Guiada");
 
   return (
-    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })}>
+    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })} done={done} onComplete={onComplete}>
       <ScheduleConfig startTime={data.startTime} endTime={data.endTime} days={data.days} onChange={(p) => onChange(p)} />
 
       <Timer />

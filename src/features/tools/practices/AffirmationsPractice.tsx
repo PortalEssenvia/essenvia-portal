@@ -15,11 +15,13 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   data: AffirmationsData;
   onChange: (patch: Partial<AffirmationsData>) => void;
+  done?: boolean;
+  onComplete?: () => void;
 }
 
 const meta = PRACTICES.find((p) => p.id === "afirmacao")!;
 
-export function AffirmationsPractice({ open, onOpenChange, data, onChange }: Props) {
+export function AffirmationsPractice({ open, onOpenChange, data, onChange, done, onComplete }: Props) {
   const [newText, setNewText] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
@@ -32,7 +34,7 @@ export function AffirmationsPractice({ open, onOpenChange, data, onChange }: Pro
   };
 
   return (
-    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })}>
+    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })} done={done} onComplete={onComplete}>
       <ScheduleConfig startTime={data.startTime} endTime={data.endTime} days={data.days} onChange={(p) => onChange(p)} />
 
       <Section title="Minhas Afirmações" action={<Button size="sm" variant="outline" onClick={() => { if (data.items.length) { setRunning(true); setIdx(0); } else toast.error("Adicione afirmações primeiro"); }}><Play className="w-4 h-4 mr-1" />Praticar</Button>}>

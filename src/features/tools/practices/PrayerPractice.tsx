@@ -18,18 +18,20 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   data: PrayerData;
   onChange: (patch: Partial<PrayerData>) => void;
+  done?: boolean;
+  onComplete?: () => void;
 }
 
 const meta = PRACTICES.find((p) => p.id === "oracao")!;
 
-export function PrayerPractice({ open, onOpenChange, data, onChange }: Props) {
+export function PrayerPractice({ open, onOpenChange, data, onChange, done, onComplete }: Props) {
   const [draft, setDraft] = useState(data.text);
   const [newTitle, setNewTitle] = useState("");
   const [newText, setNewText] = useState("");
   const [adding, setAdding] = useState(false);
 
   return (
-    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })}>
+    <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })} done={done} onComplete={onComplete}>
       <ScheduleConfig
         startTime={data.startTime}
         endTime={data.endTime}
