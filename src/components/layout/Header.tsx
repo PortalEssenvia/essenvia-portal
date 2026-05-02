@@ -38,10 +38,7 @@ export const Header = () => {
     >
       <div className="container flex items-center justify-between h-20">
         <Link to="/" className="flex items-center gap-3">
-          <img src="/logo.png" alt="Nova Essenvia" className="h-12 w-auto" />
-          <span className="hidden sm:inline font-display text-xl text-verde-profundo tracking-widest">
-            NOVA ESSENVIA
-          </span>
+          <img src="/logo.png" alt="Nova Essenvia" className="h-16 w-auto" />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">
