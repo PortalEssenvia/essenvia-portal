@@ -36,9 +36,13 @@ export const Header = () => {
           : "bg-transparent"
       )}
     >
-      <div className="container flex items-center justify-between h-20">
-        <Link to="/" className="flex items-center gap-3">
-          <img src="/logo.png" alt="Nova Essenvia" className="h-16 w-auto" />
+      <div className="container flex items-center justify-between h-28 md:h-32">
+        <Link to="/" className="flex items-center gap-3 py-2">
+          <img
+            src="/logo.png"
+            alt="Nova Essenvia"
+            className="h-24 md:h-32 lg:h-36 w-auto object-contain"
+          />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">
