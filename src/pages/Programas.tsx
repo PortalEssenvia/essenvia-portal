@@ -17,7 +17,7 @@ const Programas = () => (
   <>
     <section className="py-20 md:py-28 bg-gradient-soft">
       <div className="container">
-        <SectionHeader eyebrow="Programas" title="Trilhas para a sua transformação" subtitle="Programas guiados que se conectam com cada fase do método Essenvia." />
+        <SectionHeader eyebrow="Programas" title="Trilhas para a sua transformação" subtitle="Programas guiados que se conectam com cada fase do método Nova Essenvia." />
       </div>
     </section>
     <section className="py-20">

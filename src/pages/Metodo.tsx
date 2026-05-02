@@ -24,7 +24,7 @@ const phases = [
     quote: "Você não só abandona um padrão — você cria um novo.",
     objective: "Construir nova rotina e nova identidade.",
     work: ["Hábitos saudáveis", "Identidade renovada", "Disciplina sustentável", "Pequenas vitórias"],
-    tools: ["Planner Essenvia", "Rotina diária guiada", "Checklists de hábitos", "Sistema de vitórias"],
+    tools: ["Planner Nova Essenvia", "Rotina diária guiada", "Checklists de hábitos", "Sistema de vitórias"],
   },
   {
     n: "04", icon: Building2, title: "Sustentar", color: "from-azul-escuro/20 to-transparent",
@@ -37,7 +37,7 @@ const phases = [
 
 const plans = [
   { name: "Gratuito", price: "R$ 0", features: ["Conteúdo introdutório", "Acesso ao blog", "1 ferramenta básica"], cta: "Começar grátis" },
-  { name: "Essenvia", price: "R$ 49/mês", features: ["Método completo", "Todas as ferramentas", "Comunidade ativa", "Conteúdos exclusivos"], cta: "Quero o método", featured: true },
+  { name: "Nova Essenvia", price: "R$ 49/mês", features: ["Método completo", "Todas as ferramentas", "Comunidade ativa", "Conteúdos exclusivos"], cta: "Quero o método", featured: true },
   { name: "Premium", price: "Em breve", features: ["Mentoria 1:1", "Workshops ao vivo", "Acompanhamento personalizado"], cta: "Lista de espera" },
 ];
 

@@ -18,7 +18,7 @@ const Entrar = () => {
       <div className="container max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-block">
-            <img src="/logo.png" alt="Essenvia" className="h-20 w-auto mx-auto" />
+            <img src="/logo.png" alt="Nova Essenvia" className="h-20 w-auto mx-auto" />
           </Link>
           <h1 className="font-display text-2xl text-verde-profundo mt-4">Sua jornada começa aqui</h1>
         </div>

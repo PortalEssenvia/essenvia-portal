@@ -7,8 +7,8 @@ export const Footer = () => {
       <div className="container py-16 grid gap-10 md:grid-cols-4">
         <div className="md:col-span-2">
           <div className="flex items-center gap-3 mb-4">
-            <img src="/logo.png" alt="Essenvia" className="h-14 w-auto bg-bege-claro/10 rounded-full p-1" />
-            <span className="font-display text-2xl tracking-widest text-dourado">ESSENVIA</span>
+            <img src="/logo.png" alt="Nova Essenvia" className="h-14 w-auto bg-bege-claro/10 rounded-full p-1" />
+            <span className="font-display text-2xl tracking-widest text-dourado">NOVA ESSENVIA</span>
           </div>
           <p className="text-bege/80 max-w-md leading-relaxed">
             Um caminho de volta para você. Consciência, cura, transformação e propósito.
@@ -36,7 +36,7 @@ export const Footer = () => {
       </div>
       <div className="border-t border-dourado/20">
         <div className="container py-6 text-center text-sm text-bege/60">
-          © 2026 Essenvia. Todos os direitos reservados. | www.portalEssenvia.com.br
+          © 2026 Nova Essenvia. Todos os direitos reservados. | www.novaessenvia.com.br
         </div>
       </div>
     </footer>

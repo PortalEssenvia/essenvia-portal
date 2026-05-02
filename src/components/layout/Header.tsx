@@ -38,9 +38,9 @@ export const Header = () => {
     >
       <div className="container flex items-center justify-between h-20">
         <Link to="/" className="flex items-center gap-3">
-          <img src="/logo.png" alt="Essenvia" className="h-12 w-auto" />
+          <img src="/logo.png" alt="Nova Essenvia" className="h-12 w-auto" />
           <span className="hidden sm:inline font-display text-xl text-verde-profundo tracking-widest">
-            ESSENVIA
+            NOVA ESSENVIA
           </span>
         </Link>
 

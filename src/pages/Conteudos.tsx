@@ -13,7 +13,7 @@ const articles = [
 ];
 
 const videos = [
-  { title: "Introdução ao Método Essenvia", duration: "12:34" },
+  { title: "Introdução ao Método Nova Essenvia", duration: "12:34" },
   { title: "Meditação guiada: presença", duration: "18:02" },
   { title: "Como mapear seus gatilhos", duration: "9:45" },
   { title: "Detox digital em 7 dias", duration: "15:20" },
