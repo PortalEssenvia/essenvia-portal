@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +10,7 @@ import type { GratitudeData } from "../types";
 import { uid } from "../utils";
 import { Pencil, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
-import { readLS, writeLS } from "../hooks/useLocalStorage";
+import { useGratitude } from "../hooks/usePractices";
 
 interface Props {
   open: boolean;
@@ -22,29 +22,13 @@ interface Props {
 }
 
 const meta = PRACTICES.find((p) => p.id === "gratidao")!;
-const dailyKey = (d: string) => `essenvia_gratitude_daily_${d}`;
 
 export function GratitudePractice({ open, onOpenChange, data, onChange, done, onComplete }: Props) {
   const [newItem, setNewItem] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const today = todayKey();
-  const [todayText, setTodayText] = useState("");
-  const [history, setHistory] = useState<{ date: string; text: string }[]>([]);
-
-  useEffect(() => {
-    if (!open) return;
-    setTodayText(readLS<string>(dailyKey(today), ""));
-    // load last 14 days
-    const h: { date: string; text: string }[] = [];
-    for (let i = 1; i <= 14; i++) {
-      const d = new Date(); d.setDate(d.getDate() - i);
-      const k = d.toISOString().slice(0, 10);
-      const t = readLS<string>(dailyKey(k), "");
-      if (t) h.push({ date: k, text: t });
-    }
-    setHistory(h);
-  }, [open, today]);
+  const { text: todayText, setText: setTodayText, history, save: saveGratitude } = useGratitude(today);
 
   return (
     <PracticeDrawer open={open} onOpenChange={onOpenChange} meta={meta} active={data.active} onActiveChange={(v) => onChange({ active: v })} done={done} onComplete={onComplete}>
@@ -77,7 +61,7 @@ export function GratitudePractice({ open, onOpenChange, data, onChange, done, on
 
       <Section title="Hoje, especialmente, sou grato por...">
         <Textarea value={todayText} onChange={(e) => setTodayText(e.target.value)} placeholder="Escreva o que tornou hoje especial..." className="min-h-[120px] bg-bege-claro" />
-        <Button onClick={() => { writeLS(dailyKey(today), todayText); toast.success("Gratidão de hoje registrada 🙌"); }} className="bg-verde-profundo text-bege-claro">Registrar gratidão de hoje</Button>
+        <Button onClick={async () => { await saveGratitude(todayText); toast.success("Gratidão de hoje registrada 🙌"); }} className="bg-verde-profundo text-bege-claro">Registrar gratidão de hoje</Button>
       </Section>
 
       <Section title="Sugestões" collapsible defaultOpen={false}>
