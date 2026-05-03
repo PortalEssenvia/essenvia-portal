@@ -7,9 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { PracticesConfig } from "../hooks/usePractices";
-import { ROUTINE_CATEGORIES, ROUTINE_TEMPLATES, STORAGE_KEYS, WEEK_DAYS, PRACTICES } from "../constants";
+import { ROUTINE_CATEGORIES, ROUTINE_TEMPLATES, WEEK_DAYS, PRACTICES } from "../constants";
 import type { RoutineActivity, RoutineCategory, WeekDay } from "../types";
-import { useLocalStorage } from "../hooks/useLocalStorage";
+import { useRoutineActivities, useRoutineDone } from "../hooks/usePractices";
 import { uid, minutesBetween } from "../utils";
 import { toast } from "sonner";
 import { Plus, Trash2, Pencil, Check, Calendar, List, LayoutGrid } from "lucide-react";
@@ -83,8 +83,8 @@ function ActivityForm({ initial, onSave, onCancel }: { initial?: Partial<Routine
 }
 
 export function RoutineBuilder({ practicesCfg }: Props) {
-  const [activities, setActivities] = useLocalStorage<RoutineActivity[]>(STORAGE_KEYS.routine, []);
-  const [doneIds, setDoneIds] = useLocalStorage<string[]>(`essenvia_routine_done_${new Date().toISOString().slice(0, 10)}`, []);
+  const [activities, setActivities] = useRoutineActivities<RoutineActivity>();
+  const [doneIds, toggleDoneId] = useRoutineDone();
   const [view, setView] = useState<"list" | "timeline">("timeline");
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -139,7 +139,7 @@ export function RoutineBuilder({ practicesCfg }: Props) {
     toast.success(`Template "${tpl.name}" aplicado`);
   };
 
-  const toggleDone = (id: string) => setDoneIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  const toggleDone = (id: string) => toggleDoneId(id);
 
   return (
     <div className="space-y-6">
