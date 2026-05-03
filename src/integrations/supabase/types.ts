@@ -14,7 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_records: {
+        Row: {
+          created_at: string
+          date: string
+          diary_answers: Json
+          diary_text: string
+          done: string[]
+          gratitude_text: string
+          routine_done: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          diary_answers?: Json
+          diary_text?: string
+          done?: string[]
+          gratitude_text?: string
+          routine_done?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          diary_answers?: Json
+          diary_text?: string
+          done?: string[]
+          gratitude_text?: string
+          routine_done?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_state: {
+        Row: {
+          created_at: string
+          practices_config: Json
+          routine: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          practices_config?: Json
+          routine?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          practices_config?: Json
+          routine?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

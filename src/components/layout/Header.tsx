@@ -1,22 +1,33 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
-const links = [
+const baseLinks = [
   { to: "/", label: "Início" },
   { to: "/metodo", label: "Método" },
   { to: "/programas", label: "Programas" },
   { to: "/conteudos", label: "Conteúdos" },
   { to: "/comunidade", label: "Comunidade" },
-  { to: "/entrar", label: "Entrar" },
 ];
 
 export const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const links = user
+    ? [...baseLinks, { to: "/ferramentas", label: "Ferramentas" }]
+    : [...baseLinks, { to: "/entrar", label: "Entrar" }];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -67,9 +78,15 @@ export const Header = () => {
         </nav>
 
         <div className="hidden lg:block">
-          <Button asChild variant="gold" size="lg">
-            <Link to="/entrar">Comece sua Jornada</Link>
-          </Button>
+          {user ? (
+            <Button variant="gold" size="lg" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />Sair
+            </Button>
+          ) : (
+            <Button asChild variant="gold" size="lg">
+              <Link to="/entrar">Comece sua Jornada</Link>
+            </Button>
+          )}
         </div>
 
         <button
@@ -99,9 +116,15 @@ export const Header = () => {
                 {l.label}
               </NavLink>
             ))}
-            <Button asChild variant="gold" size="lg" className="mt-2">
-              <Link to="/entrar">Comece sua Jornada</Link>
-            </Button>
+            {user ? (
+              <Button variant="gold" size="lg" className="mt-2" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />Sair
+              </Button>
+            ) : (
+              <Button asChild variant="gold" size="lg" className="mt-2">
+                <Link to="/entrar">Comece sua Jornada</Link>
+              </Button>
+            )}
           </nav>
         </div>
       )}

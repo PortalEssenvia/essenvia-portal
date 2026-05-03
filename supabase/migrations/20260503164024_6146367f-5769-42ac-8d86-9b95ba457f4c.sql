@@ -1,0 +1,1 @@
+ALTER TABLE public.daily_records ADD COLUMN routine_done TEXT[] NOT NULL DEFAULT '{}';

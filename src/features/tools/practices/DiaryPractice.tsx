@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -7,11 +7,11 @@ import { Slider } from "@/components/ui/slider";
 import { Section } from "../components/Section";
 import { ScheduleConfig } from "../components/ScheduleConfig";
 import { PracticeDrawer } from "../components/PracticeDrawer";
-import { DIARY_QUESTIONS, PRACTICES, STORAGE_KEYS, todayKey } from "../constants";
-import type { DiaryData, DiaryEntry, DiaryAnswers } from "../types";
+import { DIARY_QUESTIONS, PRACTICES, todayKey } from "../constants";
+import type { DiaryData, DiaryAnswers } from "../types";
 import { formatDateBR } from "../utils";
 import { toast } from "sonner";
-import { readLS, writeLS } from "../hooks/useLocalStorage";
+import { useDiaryEntry, useDiaryHistory } from "../hooks/usePractices";
 import { Search } from "lucide-react";
 
 interface Props {
@@ -25,35 +25,20 @@ interface Props {
 
 const meta = PRACTICES.find((p) => p.id === "diario")!;
 
-function loadAllEntries(): DiaryEntry[] {
-  const out: DiaryEntry[] = [];
-  for (let i = 0; i < window.localStorage.length; i++) {
-    const k = window.localStorage.key(i);
-    if (k?.startsWith("essenvia_diary_")) {
-      const e = readLS<DiaryEntry | null>(k, null);
-      if (e) out.push(e);
-    }
-  }
-  return out.sort((a, b) => b.date.localeCompare(a.date));
-}
-
 export function DiaryPractice({ open, onOpenChange, data, onChange, done, onComplete }: Props) {
   const today = todayKey();
-  const todayKeyLS = STORAGE_KEYS.diary(today);
-  const [entry, setEntry] = useState<DiaryEntry>(() => readLS(todayKeyLS, { date: today, text: "", answers: {} as DiaryAnswers }));
-  const [history, setHistory] = useState<DiaryEntry[]>([]);
+  const { text, setText, answers, setAnswers, save: saveEntry } = useDiaryEntry(today);
+  const history = useDiaryHistory(today);
   const [search, setSearch] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
 
-  useEffect(() => { if (open) setHistory(loadAllEntries().filter((e) => e.date !== today)); }, [open, today]);
-
-  const save = () => {
-    writeLS(todayKeyLS, entry);
+  const save = async () => {
+    await saveEntry();
     toast.success("📓 Registro de hoje salvo");
   };
 
   const setAnswer = <K extends keyof DiaryAnswers>(k: K, v: DiaryAnswers[K]) =>
-    setEntry((e) => ({ ...e, answers: { ...e.answers, [k]: v } }));
+    setAnswers((prev) => ({ ...prev, [k]: v }));
 
   const filtered = history.filter((h) => !search || h.text.toLowerCase().includes(search.toLowerCase()) || h.date.includes(search));
 
@@ -63,8 +48,8 @@ export function DiaryPractice({ open, onOpenChange, data, onChange, done, onComp
 
       <Section title={`📓 ${formatDateBR(today)}`}>
         <Textarea
-          value={entry.text}
-          onChange={(e) => setEntry((p) => ({ ...p, text: e.target.value }))}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
           placeholder="Como foi seu dia? O que você sentiu, aprendeu, superou hoje?"
           className="min-h-[200px] bg-bege-claro"
         />
@@ -77,11 +62,11 @@ export function DiaryPractice({ open, onOpenChange, data, onChange, done, onComp
             <Label className="text-sm text-verde-profundo">{q.label}</Label>
             {q.type === "slider" ? (
               <div className="flex items-center gap-3">
-                <Slider value={[entry.answers.mood ?? 5]} min={1} max={10} step={1} onValueChange={(v) => setAnswer("mood", v[0])} className="flex-1" />
-                <span className="font-display text-2xl text-verde-profundo w-10 text-center">{entry.answers.mood ?? 5}</span>
+                <Slider value={[answers.mood ?? 5]} min={1} max={10} step={1} onValueChange={(v) => setAnswer("mood", v[0])} className="flex-1" />
+                <span className="font-display text-2xl text-verde-profundo w-10 text-center">{answers.mood ?? 5}</span>
               </div>
             ) : (
-              <Textarea value={(entry.answers as any)[q.key] || ""} onChange={(e) => setAnswer(q.key as keyof DiaryAnswers, e.target.value as never)} className="bg-bege-claro" />
+              <Textarea value={(answers as any)[q.key] || ""} onChange={(e) => setAnswer(q.key as keyof DiaryAnswers, e.target.value as never)} className="bg-bege-claro" />
             )}
           </div>
         ))}
