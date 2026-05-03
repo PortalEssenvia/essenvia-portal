@@ -22,6 +22,7 @@ export type Database = {
           diary_text: string
           done: string[]
           gratitude_text: string
+          routine_done: string[]
           updated_at: string
           user_id: string
         }
@@ -32,6 +33,7 @@ export type Database = {
           diary_text?: string
           done?: string[]
           gratitude_text?: string
+          routine_done?: string[]
           updated_at?: string
           user_id: string
         }
@@ -42,6 +44,7 @@ export type Database = {
           diary_text?: string
           done?: string[]
           gratitude_text?: string
+          routine_done?: string[]
           updated_at?: string
           user_id?: string
         }
