@@ -55,8 +55,9 @@ export function usePracticesConfig() {
         .eq("user_id", user.id)
         .maybeSingle();
       if (cancelled) return;
-      if (data?.practices_config && Object.keys(data.practices_config).length > 0) {
-        setCfg({ ...defaultConfig(), ...(data.practices_config as PracticesConfig) });
+      const pc = data?.practices_config as unknown;
+      if (pc && typeof pc === "object" && Object.keys(pc as object).length > 0) {
+        setCfg({ ...defaultConfig(), ...(pc as PracticesConfig) });
       } else {
         // initialize row
         await supabase.from("user_state").upsert({ user_id: user.id, practices_config: defaultConfig() as any });
