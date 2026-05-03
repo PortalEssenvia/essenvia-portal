@@ -6,9 +6,8 @@ import { Flame } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-import { PRACTICES, PRACTICE_IDS, STORAGE_KEYS } from "@/features/tools/constants";
-import { useDailyDone, usePracticesConfig, useStreak } from "@/features/tools/hooks/usePractices";
-import { readLS } from "@/features/tools/hooks/useLocalStorage";
+import { PRACTICES, PRACTICE_IDS } from "@/features/tools/constants";
+import { useDailyDone, useDailyHistory, usePracticesConfig, useStreak } from "@/features/tools/hooks/usePractices";
 import type { PracticeId } from "@/features/tools/types";
 import { PracticeCard } from "@/features/tools/components/PracticeCard";
 import { RoutineBuilder } from "@/features/tools/components/RoutineBuilder";
@@ -26,6 +25,7 @@ const Ferramentas = () => {
   const { cfg, update } = usePracticesConfig();
   const { done, toggle, mark } = useDailyDone();
   const streak = useStreak();
+  const history = useDailyHistory(35);
   const [open, setOpen] = useState<PracticeId | null>(null);
   const [now] = useState(new Date());
 
@@ -63,7 +63,7 @@ const Ferramentas = () => {
 
   const dayStatus = (day: number) => {
     const k = new Date(year, month, day).toISOString().slice(0, 10);
-    const arr = readLS<PracticeId[]>(STORAGE_KEYS.daily(k), []);
+    const arr = (k === new Date().toISOString().slice(0, 10) ? done : history[k]) ?? [];
     if (arr.length === PRACTICE_IDS.length) return "full";
     if (arr.length > 0) return "partial";
     return "empty";
@@ -75,14 +75,15 @@ const Ferramentas = () => {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const k = d.toISOString().slice(0, 10);
+      const arr = (k === new Date().toISOString().slice(0, 10) ? done : history[k]) ?? [];
       out.push({
         label: d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "").slice(0, 3),
-        count: readLS<PracticeId[]>(STORAGE_KEYS.daily(k), []).length,
+        count: arr.length,
         date: k,
       });
     }
     return out;
-  }, [done]);
+  }, [done, history]);
 
   return (
     <>
