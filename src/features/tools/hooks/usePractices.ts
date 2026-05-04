@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PRACTICE_IDS, todayKey } from "../constants";
 import type {
   AffirmationsData, DiaryData, GratitudeData,
@@ -36,42 +36,37 @@ export const defaultConfig = (): PracticesConfig => ({
   diario: { ...baseCfg("21:00", "21:15") },
 });
 
-/**
- * Practices configuration synced with Supabase (user_state.practices_config).
- */
+/** Practices configuration synced with profiles.practices_config (jsonb). */
 export function usePracticesConfig() {
   const { user } = useAuth();
   const [cfg, setCfg] = useState<PracticesConfig>(() => defaultConfig());
   const [loaded, setLoaded] = useState(false);
 
-  // Load from server
   useEffect(() => {
     if (!user) { setLoaded(false); setCfg(defaultConfig()); return; }
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from("user_state")
+        .from("profiles")
         .select("practices_config")
-        .eq("user_id", user.id)
+        .eq("id", user.id)
         .maybeSingle();
       if (cancelled) return;
-      const pc = data?.practices_config as unknown;
+      const pc = (data as any)?.practices_config as unknown;
       if (pc && typeof pc === "object" && Object.keys(pc as object).length > 0) {
         setCfg({ ...defaultConfig(), ...(pc as PracticesConfig) });
       } else {
-        // initialize row
-        await supabase.from("user_state").upsert({ user_id: user.id, practices_config: defaultConfig() as any });
+        await supabase.from("profiles").update({ practices_config: defaultConfig() as any }).eq("id", user.id);
       }
       setLoaded(true);
     })();
     return () => { cancelled = true; };
   }, [user]);
 
-  // Persist on change (debounced)
   useEffect(() => {
     if (!user || !loaded) return;
     const t = setTimeout(() => {
-      supabase.from("user_state").upsert({ user_id: user.id, practices_config: cfg as any });
+      supabase.from("profiles").update({ practices_config: cfg as any }).eq("id", user.id);
     }, 400);
     return () => clearTimeout(t);
   }, [cfg, user, loaded]);
@@ -83,9 +78,7 @@ export function usePracticesConfig() {
   return { cfg, setCfg, update };
 }
 
-/**
- * Today's completed practices, synced with Supabase daily_records.
- */
+/** Today's completed practices, synced with daily_practice_logs. */
 export function useDailyDone() {
   const { user } = useAuth();
   const today = todayKey();
@@ -96,47 +89,49 @@ export function useDailyDone() {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from("daily_records")
-        .select("done")
+        .from("daily_practice_logs")
+        .select("practice_key")
         .eq("user_id", user.id)
-        .eq("date", today)
-        .maybeSingle();
+        .eq("log_date", today)
+        .eq("completed", true);
       if (cancelled) return;
-      setDone((data?.done as PracticeId[]) ?? []);
+      setDone(((data ?? []).map((r: any) => r.practice_key as PracticeId)));
     })();
     return () => { cancelled = true; };
   }, [user, today]);
 
-  const persist = useCallback(async (next: PracticeId[]) => {
+  const persistOne = useCallback(async (id: PracticeId, completed: boolean) => {
     if (!user) return;
-    await supabase.from("daily_records").upsert({
-      user_id: user.id, date: today, done: next,
-    });
+    await supabase.from("daily_practice_logs").upsert({
+      user_id: user.id,
+      practice_key: id,
+      log_date: today,
+      completed,
+      completed_at: completed ? new Date().toISOString() : null,
+    }, { onConflict: "user_id,practice_key,log_date" });
   }, [user, today]);
 
   const toggle = useCallback((id: PracticeId) => {
     setDone((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      persist(next);
+      const has = prev.includes(id);
+      const next = has ? prev.filter((x) => x !== id) : [...prev, id];
+      persistOne(id, !has);
       return next;
     });
-  }, [persist]);
+  }, [persistOne]);
 
   const mark = useCallback((id: PracticeId) => {
     setDone((prev) => {
       if (prev.includes(id)) return prev;
-      const next = [...prev, id];
-      persist(next);
-      return next;
+      persistOne(id, true);
+      return [...prev, id];
     });
-  }, [persist]);
+  }, [persistOne]);
 
   return { done, toggle, mark, today };
 }
 
-/**
- * Streak based on daily_records of past 366 days.
- */
+/** Streak: consecutive days with all practices completed. */
 export function useStreak() {
   const { user } = useAuth();
   const [streak, setStreak] = useState(0);
@@ -148,20 +143,24 @@ export function useStreak() {
       const since = new Date();
       since.setDate(since.getDate() - 366);
       const { data } = await supabase
-        .from("daily_records")
-        .select("date,done")
+        .from("daily_practice_logs")
+        .select("log_date,practice_key,completed")
         .eq("user_id", user.id)
-        .gte("date", since.toISOString().slice(0, 10))
-        .order("date", { ascending: false });
+        .eq("completed", true)
+        .gte("log_date", since.toISOString().slice(0, 10));
       if (cancelled || !data) return;
-      const map = new Map<string, number>();
-      data.forEach((r: any) => map.set(r.date, (r.done as string[]).length));
+      const map = new Map<string, Set<string>>();
+      data.forEach((r: any) => {
+        const set = map.get(r.log_date) ?? new Set<string>();
+        set.add(r.practice_key);
+        map.set(r.log_date, set);
+      });
       let s = 0;
       const d = new Date();
       for (let i = 0; i < 366; i++) {
         const k = d.toISOString().slice(0, 10);
-        const count = map.get(k) ?? 0;
-        if (count === PRACTICE_IDS.length) {
+        const set = map.get(k);
+        if (set && set.size === PRACTICE_IDS.length) {
           s++;
           d.setDate(d.getDate() - 1);
         } else if (i === 0) {
@@ -176,10 +175,7 @@ export function useStreak() {
   return streak;
 }
 
-/**
- * Hook returning a map of date->done[] for the past N days.
- * Used by Ferramentas page for week/month grids.
- */
+/** Map of date->done practices for past N days. */
 export function useDailyHistory(days: number = 35) {
   const { user } = useAuth();
   const [map, setMap] = useState<Record<string, PracticeId[]>>({});
@@ -191,13 +187,16 @@ export function useDailyHistory(days: number = 35) {
       const since = new Date();
       since.setDate(since.getDate() - days);
       const { data } = await supabase
-        .from("daily_records")
-        .select("date,done")
+        .from("daily_practice_logs")
+        .select("log_date,practice_key,completed")
         .eq("user_id", user.id)
-        .gte("date", since.toISOString().slice(0, 10));
+        .eq("completed", true)
+        .gte("log_date", since.toISOString().slice(0, 10));
       if (cancelled || !data) return;
       const m: Record<string, PracticeId[]> = {};
-      data.forEach((r: any) => { m[r.date] = r.done as PracticeId[]; });
+      data.forEach((r: any) => {
+        (m[r.log_date] ??= []).push(r.practice_key as PracticeId);
+      });
       setMap(m);
     })();
   }, [user, days]);
@@ -205,9 +204,7 @@ export function useDailyHistory(days: number = 35) {
   return map;
 }
 
-/**
- * Routine activities synced with Supabase user_state.routine.
- */
+/** Routine activities synced with profiles.routine (jsonb). */
 export function useRoutineActivities<T = unknown>(): [T[], (v: T[] | ((p: T[]) => T[])) => void] {
   const { user } = useAuth();
   const [list, setList] = useState<T[]>([]);
@@ -218,12 +215,12 @@ export function useRoutineActivities<T = unknown>(): [T[], (v: T[] | ((p: T[]) =
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from("user_state")
+        .from("profiles")
         .select("routine")
-        .eq("user_id", user.id)
+        .eq("id", user.id)
         .maybeSingle();
       if (cancelled) return;
-      setList((data?.routine as T[]) ?? []);
+      setList(((data as any)?.routine as T[]) ?? []);
       setLoaded(true);
     })();
     return () => { cancelled = true; };
@@ -232,7 +229,7 @@ export function useRoutineActivities<T = unknown>(): [T[], (v: T[] | ((p: T[]) =
   useEffect(() => {
     if (!user || !loaded) return;
     const t = setTimeout(() => {
-      supabase.from("user_state").upsert({ user_id: user.id, routine: list as any });
+      supabase.from("profiles").update({ routine: list as any }).eq("id", user.id);
     }, 400);
     return () => clearTimeout(t);
   }, [list, user, loaded]);
@@ -244,9 +241,13 @@ export function useRoutineActivities<T = unknown>(): [T[], (v: T[] | ((p: T[]) =
   return [list, update];
 }
 
-/**
- * Routine activities done today (subset of daily_records.routine_done).
- */
+async function ensureDiaryRow(user_id: string, date: string) {
+  await supabase
+    .from("diary_entries")
+    .upsert({ user_id, entry_date: date }, { onConflict: "user_id,entry_date", ignoreDuplicates: true });
+}
+
+/** Routine activities done today (stored in diary_entries.routine_done). */
 export function useRoutineDone(): [string[], (id: string) => void] {
   const { user } = useAuth();
   const today = todayKey();
@@ -257,13 +258,13 @@ export function useRoutineDone(): [string[], (id: string) => void] {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from("daily_records")
+        .from("diary_entries")
         .select("routine_done")
         .eq("user_id", user.id)
-        .eq("date", today)
+        .eq("entry_date", today)
         .maybeSingle();
       if (cancelled) return;
-      setDone((data?.routine_done as string[]) ?? []);
+      setDone(((data as any)?.routine_done as string[]) ?? []);
     })();
     return () => { cancelled = true; };
   }, [user, today]);
@@ -271,7 +272,15 @@ export function useRoutineDone(): [string[], (id: string) => void] {
   const toggle = useCallback((id: string) => {
     setDone((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      if (user) supabase.from("daily_records").upsert({ user_id: user.id, date: today, routine_done: next });
+      if (user) {
+        (async () => {
+          await ensureDiaryRow(user.id, today);
+          await supabase.from("diary_entries")
+            .update({ routine_done: next })
+            .eq("user_id", user.id)
+            .eq("entry_date", today);
+        })();
+      }
       return next;
     });
   }, [user, today]);
@@ -279,9 +288,7 @@ export function useRoutineDone(): [string[], (id: string) => void] {
   return [done, toggle];
 }
 
-/**
- * Diary entry for a specific date.
- */
+/** Diary entry for a specific date. */
 export function useDiaryEntry(date: string) {
   const { user } = useAuth();
   const [text, setText] = useState("");
@@ -293,14 +300,14 @@ export function useDiaryEntry(date: string) {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from("daily_records")
-        .select("diary_text,diary_answers")
+        .from("diary_entries")
+        .select("content,answers")
         .eq("user_id", user.id)
-        .eq("date", date)
+        .eq("entry_date", date)
         .maybeSingle();
       if (cancelled) return;
-      setText(data?.diary_text ?? "");
-      setAnswers((data?.diary_answers as Record<string, any>) ?? {});
+      setText(((data as any)?.content as string) ?? "");
+      setAnswers(((data as any)?.answers as Record<string, any>) ?? {});
       setLoaded(true);
     })();
     return () => { cancelled = true; };
@@ -308,17 +315,15 @@ export function useDiaryEntry(date: string) {
 
   const save = useCallback(async () => {
     if (!user) return;
-    await supabase.from("daily_records").upsert({
-      user_id: user.id, date, diary_text: text, diary_answers: answers,
-    });
+    await supabase.from("diary_entries").upsert({
+      user_id: user.id, entry_date: date, content: text, answers: answers as any,
+    }, { onConflict: "user_id,entry_date" });
   }, [user, date, text, answers]);
 
   return { text, setText, answers, setAnswers, save, loaded };
 }
 
-/**
- * History of past diary entries (excluding `excludeDate`).
- */
+/** History of past diary entries. */
 export function useDiaryHistory(excludeDate?: string) {
   const { user } = useAuth();
   const [entries, setEntries] = useState<{ date: string; text: string; answers: Record<string, any> }[]>([]);
@@ -328,17 +333,17 @@ export function useDiaryHistory(excludeDate?: string) {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from("daily_records")
-        .select("date,diary_text,diary_answers")
+        .from("diary_entries")
+        .select("entry_date,content,answers")
         .eq("user_id", user.id)
-        .neq("diary_text", "")
-        .order("date", { ascending: false })
+        .neq("content", "")
+        .order("entry_date", { ascending: false })
         .limit(200);
       if (cancelled || !data) return;
       setEntries(
-        data
-          .filter((r: any) => r.date !== excludeDate)
-          .map((r: any) => ({ date: r.date, text: r.diary_text, answers: r.diary_answers ?? {} }))
+        (data as any[])
+          .filter((r) => r.entry_date !== excludeDate && r.content)
+          .map((r) => ({ date: r.entry_date, text: r.content ?? "", answers: r.answers ?? {} }))
       );
     })();
     return () => { cancelled = true; };
@@ -347,9 +352,7 @@ export function useDiaryHistory(excludeDate?: string) {
   return entries;
 }
 
-/**
- * Today's gratitude text + recent history.
- */
+/** Today's gratitude text + recent history (stored in diary_entries.gratitude_text). */
 export function useGratitude(date: string) {
   const { user } = useAuth();
   const [text, setText] = useState("");
@@ -361,18 +364,18 @@ export function useGratitude(date: string) {
     (async () => {
       const since = new Date(); since.setDate(since.getDate() - 14);
       const { data } = await supabase
-        .from("daily_records")
-        .select("date,gratitude_text")
+        .from("diary_entries")
+        .select("entry_date,gratitude_text")
         .eq("user_id", user.id)
-        .gte("date", since.toISOString().slice(0, 10))
-        .order("date", { ascending: false });
+        .gte("entry_date", since.toISOString().slice(0, 10))
+        .order("entry_date", { ascending: false });
       if (cancelled || !data) return;
-      const today = data.find((r: any) => r.date === date);
+      const today = (data as any[]).find((r) => r.entry_date === date);
       setText(today?.gratitude_text ?? "");
       setHistory(
-        data
-          .filter((r: any) => r.date !== date && r.gratitude_text)
-          .map((r: any) => ({ date: r.date, text: r.gratitude_text }))
+        (data as any[])
+          .filter((r) => r.entry_date !== date && r.gratitude_text)
+          .map((r) => ({ date: r.entry_date, text: r.gratitude_text }))
       );
     })();
     return () => { cancelled = true; };
@@ -380,9 +383,9 @@ export function useGratitude(date: string) {
 
   const save = useCallback(async (newText: string) => {
     if (!user) return;
-    await supabase.from("daily_records").upsert({
-      user_id: user.id, date, gratitude_text: newText,
-    });
+    await supabase.from("diary_entries").upsert({
+      user_id: user.id, entry_date: date, gratitude_text: newText,
+    }, { onConflict: "user_id,entry_date" });
   }, [user, date]);
 
   return { text, setText, history, save };
