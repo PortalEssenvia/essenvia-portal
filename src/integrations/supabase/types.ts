@@ -95,6 +95,7 @@ export type Database = {
       }
       diary_entries: {
         Row: {
+          answers: Json
           best_moment: string | null
           biggest_achievement: string | null
           biggest_challenge: string | null
@@ -102,13 +103,16 @@ export type Database = {
           could_do_better: string | null
           created_at: string
           entry_date: string
+          gratitude_text: string
           id: string
           lesson_learned: string | null
           mood_score: number | null
+          routine_done: string[]
           updated_at: string
           user_id: string
         }
         Insert: {
+          answers?: Json
           best_moment?: string | null
           biggest_achievement?: string | null
           biggest_challenge?: string | null
@@ -116,13 +120,16 @@ export type Database = {
           could_do_better?: string | null
           created_at?: string
           entry_date?: string
+          gratitude_text?: string
           id?: string
           lesson_learned?: string | null
           mood_score?: number | null
+          routine_done?: string[]
           updated_at?: string
           user_id: string
         }
         Update: {
+          answers?: Json
           best_moment?: string | null
           biggest_achievement?: string | null
           biggest_challenge?: string | null
@@ -130,9 +137,11 @@ export type Database = {
           could_do_better?: string | null
           created_at?: string
           entry_date?: string
+          gratitude_text?: string
           id?: string
           lesson_learned?: string | null
           mood_score?: number | null
+          routine_done?: string[]
           updated_at?: string
           user_id?: string
         }
@@ -464,6 +473,8 @@ export type Database = {
           id: string
           onboarding_done: boolean
           plan: string
+          practices_config: Json
+          routine: Json
           updated_at: string
         }
         Insert: {
@@ -475,6 +486,8 @@ export type Database = {
           id: string
           onboarding_done?: boolean
           plan?: string
+          practices_config?: Json
+          routine?: Json
           updated_at?: string
         }
         Update: {
@@ -486,6 +499,8 @@ export type Database = {
           id?: string
           onboarding_done?: boolean
           plan?: string
+          practices_config?: Json
+          routine?: Json
           updated_at?: string
         }
         Relationships: []
