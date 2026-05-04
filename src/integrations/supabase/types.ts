@@ -14,99 +14,724 @@ export type Database = {
   }
   public: {
     Tables: {
-      daily_records: {
+      affirmations: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affirmations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_practice_logs: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          log_date: string
+          notes: string | null
+          practice_key: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          log_date?: string
+          notes?: string | null
+          practice_key: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          log_date?: string
+          notes?: string | null
+          practice_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_practice_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diary_entries: {
+        Row: {
+          best_moment: string | null
+          biggest_achievement: string | null
+          biggest_challenge: string | null
+          content: string | null
+          could_do_better: string | null
+          created_at: string
+          entry_date: string
+          id: string
+          lesson_learned: string | null
+          mood_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_moment?: string | null
+          biggest_achievement?: string | null
+          biggest_challenge?: string | null
+          content?: string | null
+          could_do_better?: string | null
+          created_at?: string
+          entry_date?: string
+          id?: string
+          lesson_learned?: string | null
+          mood_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_moment?: string | null
+          biggest_achievement?: string | null
+          biggest_challenge?: string | null
+          content?: string | null
+          could_do_better?: string | null
+          created_at?: string
+          entry_date?: string
+          id?: string
+          lesson_learned?: string | null
+          mood_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diary_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gratitude_daily_logs: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          log_date: string
+          mood_score: number | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          log_date?: string
+          mood_score?: number | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          log_date?: string
+          mood_score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gratitude_daily_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gratitudes: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gratitudes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_files: {
         Row: {
           created_at: string
-          date: string
-          diary_answers: Json
-          diary_text: string
-          done: string[]
-          gratitude_text: string
-          routine_done: string[]
+          entity_id: string
+          entity_type: string
+          file_name: string
+          file_size: number | null
+          file_type: string
+          id: string
+          mime_type: string | null
+          public_url: string | null
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          mime_type?: string | null
+          public_url?: string | null
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          mime_type?: string | null
+          public_url?: string | null
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_files_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meditations: {
+        Row: {
+          created_at: string
+          duration_min: number
+          id: string
+          instructions: string | null
+          is_active: boolean
+          name: string
+          sort_order: number
+          type: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
-          date: string
-          diary_answers?: Json
-          diary_text?: string
-          done?: string[]
-          gratitude_text?: string
-          routine_done?: string[]
+          duration_min?: number
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          type?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
-          date?: string
-          diary_answers?: Json
-          diary_text?: string
-          done?: string[]
-          gratitude_text?: string
-          routine_done?: string[]
+          duration_min?: number
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          type?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "meditations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      physical_activities: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_min: number
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_min?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_min?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "physical_activities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      practice_configs: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          id: string
+          is_active: boolean
+          practice_key: string
+          sort_order: number
+          start_time: string | null
+          updated_at: string
+          user_id: string
+          week_days: number[]
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          is_active?: boolean
+          practice_key: string
+          sort_order?: number
+          start_time?: string | null
+          updated_at?: string
+          user_id: string
+          week_days?: number[]
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          is_active?: boolean
+          practice_key?: string
+          sort_order?: number
+          start_time?: string | null
+          updated_at?: string
+          user_id?: string
+          week_days?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_configs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prayers: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_default: boolean
+          is_heart_prayer: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          is_heart_prayer?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          is_heart_prayer?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prayers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
-          display_name: string | null
+          current_phase: string
+          full_name: string | null
           id: string
+          onboarding_done: boolean
+          plan: string
           updated_at: string
-          user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
-          display_name?: string | null
-          id?: string
+          current_phase?: string
+          full_name?: string | null
+          id: string
+          onboarding_done?: boolean
+          plan?: string
           updated_at?: string
-          user_id: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
-          display_name?: string | null
+          current_phase?: string
+          full_name?: string | null
           id?: string
+          onboarding_done?: boolean
+          plan?: string
           updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
-      user_state: {
+      readings: {
+        Row: {
+          author: string | null
+          completed_at: string | null
+          created_at: string
+          current_page: number
+          id: string
+          notes: string | null
+          sort_order: number
+          started_at: string | null
+          status: string
+          title: string
+          total_pages: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_page?: number
+          id?: string
+          notes?: string | null
+          sort_order?: number
+          started_at?: string | null
+          status?: string
+          title: string
+          total_pages?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_page?: number
+          id?: string
+          notes?: string | null
+          sort_order?: number
+          started_at?: string | null
+          status?: string
+          title?: string
+          total_pages?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "readings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routine_activities: {
+        Row: {
+          category: string
+          created_at: string
+          end_time: string
+          id: string
+          is_active: boolean
+          linked_practice: string | null
+          name: string
+          notes: string | null
+          repeat_days: number[] | null
+          repeat_type: string
+          sort_order: number
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          end_time: string
+          id?: string
+          is_active?: boolean
+          linked_practice?: string | null
+          name: string
+          notes?: string | null
+          repeat_days?: number[] | null
+          repeat_type?: string
+          sort_order?: number
+          start_time: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          linked_practice?: string | null
+          name?: string
+          notes?: string | null
+          repeat_days?: number[] | null
+          repeat_type?: string
+          sort_order?: number
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routine_activities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routine_daily_logs: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          log_date: string
+          routine_activity_id: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          log_date?: string
+          routine_activity_id: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          log_date?: string
+          routine_activity_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routine_daily_logs_routine_activity_id_fkey"
+            columns: ["routine_activity_id"]
+            isOneToOne: false
+            referencedRelation: "routine_activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routine_daily_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      streaks: {
+        Row: {
+          current_streak: number
+          id: string
+          last_active_date: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          id?: string
+          last_active_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          id?: string
+          last_active_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "streaks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visualizations: {
         Row: {
           created_at: string
-          practices_config: Json
-          routine: Json
+          description: string | null
+          id: string
+          is_active: boolean
+          sort_order: number
+          title: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
-          practices_config?: Json
-          routine?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          title: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
-          practices_config?: Json
-          routine?: Json
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          sort_order?: number
+          title?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "visualizations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_user_streak: { Args: { p_user_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
