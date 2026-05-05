@@ -2,8 +2,20 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const DEFAULT_SUPABASE_URL = 'https://nubpxsrhnaulmxokhrgb.supabase.co';
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im51YnB4c3JobmF1bG14b2tocmdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MTEzNTUsImV4cCI6MjA5MzM4NzM1NX0.NAzqqXhAVC1FpfRwxV8khA5Dgu0YkQRiXohMEl2ELxY';
+
+const normalizeEnvValue = (value?: string) => value?.trim().replace(/^['"]|['"]$/g, '') ?? '';
+
+const SUPABASE_URL = normalizeEnvValue(import.meta.env.VITE_SUPABASE_URL) || DEFAULT_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = normalizeEnvValue(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  console.error('[Essenvia] Configuração do backend ausente:', {
+    hasUrl: Boolean(SUPABASE_URL),
+    hasPublishableKey: Boolean(SUPABASE_PUBLISHABLE_KEY),
+  });
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
