@@ -46,17 +46,28 @@ export function usePracticesConfig() {
     if (!user) { setLoaded(false); setCfg(defaultConfig()); return; }
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
         .select("practices_config")
         .eq("id", user.id)
         .maybeSingle();
       if (cancelled) return;
+      if (error) {
+        console.error("[Essenvia] Erro ao carregar practices_config:", error);
+        setLoaded(true);
+        return;
+      }
       const pc = (data as any)?.practices_config as unknown;
       if (pc && typeof pc === "object" && Object.keys(pc as object).length > 0) {
         setCfg({ ...defaultConfig(), ...(pc as PracticesConfig) });
       } else {
-        await supabase.from("profiles").update({ practices_config: defaultConfig() as any }).eq("id", user.id);
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({ practices_config: defaultConfig() as any })
+          .eq("id", user.id);
+        if (updateError) {
+          console.error("[Essenvia] Erro ao inicializar practices_config:", updateError);
+        }
       }
       setLoaded(true);
     })();
@@ -65,8 +76,14 @@ export function usePracticesConfig() {
 
   useEffect(() => {
     if (!user || !loaded) return;
-    const t = setTimeout(() => {
-      supabase.from("profiles").update({ practices_config: cfg as any }).eq("id", user.id);
+    const t = setTimeout(async () => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ practices_config: cfg as any })
+        .eq("id", user.id);
+      if (error) {
+        console.error("[Essenvia] Erro ao salvar practices_config:", error);
+      }
     }, 400);
     return () => clearTimeout(t);
   }, [cfg, user, loaded]);
@@ -102,13 +119,18 @@ export function useDailyDone() {
 
   const persistOne = useCallback(async (id: PracticeId, completed: boolean) => {
     if (!user) return;
-    await supabase.from("daily_practice_logs").upsert({
-      user_id: user.id,
-      practice_key: id,
-      log_date: today,
-      completed,
-      completed_at: completed ? new Date().toISOString() : null,
-    }, { onConflict: "user_id,practice_key,log_date" });
+    const { error } = await supabase
+      .from("daily_practice_logs")
+      .upsert({
+        user_id: user.id,
+        practice_key: id,
+        log_date: today,
+        completed,
+        completed_at: completed ? new Date().toISOString() : null,
+      }, { onConflict: "user_id,practice_key,log_date" });
+    if (error) {
+      console.error("[Essenvia] Erro ao salvar prática diária:", id, error);
+    }
   }, [user, today]);
 
   const toggle = useCallback((id: PracticeId) => {
@@ -214,12 +236,17 @@ export function useRoutineActivities<T = unknown>(): [T[], (v: T[] | ((p: T[]) =
     if (!user) { setList([]); setLoaded(false); return; }
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
         .select("routine")
         .eq("id", user.id)
         .maybeSingle();
       if (cancelled) return;
+      if (error) {
+        console.error("[Essenvia] Erro ao carregar routine:", error);
+        setLoaded(true);
+        return;
+      }
       setList(((data as any)?.routine as T[]) ?? []);
       setLoaded(true);
     })();
@@ -228,8 +255,14 @@ export function useRoutineActivities<T = unknown>(): [T[], (v: T[] | ((p: T[]) =
 
   useEffect(() => {
     if (!user || !loaded) return;
-    const t = setTimeout(() => {
-      supabase.from("profiles").update({ routine: list as any }).eq("id", user.id);
+    const t = setTimeout(async () => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ routine: list as any })
+        .eq("id", user.id);
+      if (error) {
+        console.error("[Essenvia] Erro ao salvar routine:", error);
+      }
     }, 400);
     return () => clearTimeout(t);
   }, [list, user, loaded]);
@@ -275,10 +308,13 @@ export function useRoutineDone(): [string[], (id: string) => void] {
       if (user) {
         (async () => {
           await ensureDiaryRow(user.id, today);
-          await supabase.from("diary_entries")
+          const { error } = await supabase.from("diary_entries")
             .update({ routine_done: next })
             .eq("user_id", user.id)
             .eq("entry_date", today);
+          if (error) {
+            console.error("[Essenvia] Erro ao salvar routine_done:", error);
+          }
         })();
       }
       return next;
@@ -315,9 +351,12 @@ export function useDiaryEntry(date: string) {
 
   const save = useCallback(async () => {
     if (!user) return;
-    await supabase.from("diary_entries").upsert({
+    const { error } = await supabase.from("diary_entries").upsert({
       user_id: user.id, entry_date: date, content: text, answers: answers as any,
     }, { onConflict: "user_id,entry_date" });
+    if (error) {
+      console.error("[Essenvia] Erro ao salvar diário:", error);
+    }
   }, [user, date, text, answers]);
 
   return { text, setText, answers, setAnswers, save, loaded };
@@ -383,9 +422,12 @@ export function useGratitude(date: string) {
 
   const save = useCallback(async (newText: string) => {
     if (!user) return;
-    await supabase.from("diary_entries").upsert({
+    const { error } = await supabase.from("diary_entries").upsert({
       user_id: user.id, entry_date: date, gratitude_text: newText,
     }, { onConflict: "user_id,entry_date" });
+    if (error) {
+      console.error("[Essenvia] Erro ao salvar gratidão:", error);
+    }
   }, [user, date]);
 
   return { text, setText, history, save };
