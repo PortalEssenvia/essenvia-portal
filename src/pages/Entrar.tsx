@@ -23,8 +23,25 @@ const Entrar = () => {
     if (user) navigate(from, { replace: true });
   }, [user, from, navigate]);
 
+  const validatePassword = (pwd: string): string | null => {
+    if (pwd.length < 8)
+      return "A senha deve ter pelo menos 8 caracteres.";
+    if (!/[A-Z]/.test(pwd))
+      return "A senha deve conter pelo menos uma letra maiúscula.";
+    if (!/[0-9]/.test(pwd))
+      return "A senha deve conter pelo menos um número.";
+    return null;
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (tab === "cadastrar") {
+      const senhaErro = validatePassword(password);
+      if (senhaErro) {
+        toast({ title: "Senha fraca", description: senhaErro, variant: "destructive" });
+        return;
+      }
+    }
     setSubmitting(true);
     if (tab === "entrar") {
       const { error } = await signIn(email, password);
@@ -72,6 +89,11 @@ const Entrar = () => {
               <div>
                 <Label htmlFor="pass">Senha</Label>
                 <Input id="pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="bg-bege-claro border-bege" />
+                {tab === "cadastrar" && password.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Use 8+ caracteres, uma letra maiúscula e um número. Ex: <span className="font-mono">Essenvia@2025</span>
+                  </p>
+                )}
               </div>
               <Button type="submit" variant="gold" className="w-full" disabled={submitting}>
                 {submitting ? "Aguarde..." : tab === "entrar" ? "Entrar" : "Criar conta"}
