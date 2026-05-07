@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const baseLinks = [
   { to: "/", label: "Início" },
@@ -19,6 +26,25 @@ export const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const [displayName, setDisplayName] = useState<string>("");
+
+  useEffect(() => {
+    if (!user) { setDisplayName(""); return; }
+    supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        const name =
+          (data as any)?.full_name ||
+          (user.user_metadata as any)?.display_name ||
+          (user.user_metadata as any)?.full_name ||
+          user.email?.split("@")[0] ||
+          "Usuário";
+        setDisplayName(name.split(" ")[0]);
+      });
+  }, [user]);
 
   const links = user
     ? [...baseLinks, { to: "/ferramentas", label: "Ferramentas" }]
@@ -79,9 +105,29 @@ export const Header = () => {
 
         <div className="hidden lg:block">
           {user ? (
-            <Button variant="gold" size="lg" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />Sair
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-dourado text-verde-profundo hover:bg-dourado/10 transition-colors text-sm font-medium">
+                  <User className="w-4 h-4 text-dourado" />
+                  <span>Olá, {displayName}</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-card border-bege">
+                <DropdownMenuItem
+                  onClick={() => navigate("/ferramentas")}
+                  className="cursor-pointer text-verde-profundo"
+                >
+                  Minhas Práticas
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="cursor-pointer text-red-500 focus:text-red-500"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button asChild variant="gold" size="lg">
               <Link to="/entrar">Comece sua Jornada</Link>

@@ -7,6 +7,7 @@ import type {
 } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export interface PracticesConfig {
   oracao: PrayerData;
@@ -41,6 +42,7 @@ export function usePracticesConfig() {
   const { user } = useAuth();
   const [cfg, setCfg] = useState<PracticesConfig>(() => defaultConfig());
   const [loaded, setLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!user) { setLoaded(false); setCfg(defaultConfig()); return; }
@@ -77,14 +79,19 @@ export function usePracticesConfig() {
   useEffect(() => {
     if (!user || !loaded) return;
     const t = setTimeout(async () => {
+      setIsSaving(true);
       const { error } = await supabase
         .from("profiles")
         .update({ practices_config: cfg as any })
         .eq("id", user.id);
+      setIsSaving(false);
       if (error) {
         console.error("[Essenvia] Erro ao salvar practices_config:", error);
+        toast.error("Erro ao salvar configuração.");
+      } else {
+        toast.success("Configuração salva ✓", { duration: 1500 });
       }
-    }, 400);
+    }, 800);
     return () => clearTimeout(t);
   }, [cfg, user, loaded]);
 
@@ -92,7 +99,7 @@ export function usePracticesConfig() {
     setCfg((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
   }, []);
 
-  return { cfg, setCfg, update };
+  return { cfg, setCfg, update, isSaving };
 }
 
 /** Today's completed practices, synced with daily_practice_logs. */
