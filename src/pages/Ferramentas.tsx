@@ -22,7 +22,7 @@ import { VisualizationPractice } from "@/features/tools/practices/VisualizationP
 import { DiaryPractice } from "@/features/tools/practices/DiaryPractice";
 
 const Ferramentas = () => {
-  const { cfg, update } = usePracticesConfig();
+  const { cfg, update, isSaving } = usePracticesConfig();
   const { done, toggle, mark } = useDailyDone();
   const streak = useStreak();
   const history = useDailyHistory(35);
@@ -87,6 +87,11 @@ const Ferramentas = () => {
 
   return (
     <>
+      {isSaving && (
+        <div className="fixed top-32 right-4 z-50 px-3 py-1.5 rounded-full bg-verde-profundo/90 text-bege-claro text-xs font-medium shadow-soft animate-fade-in">
+          Salvando...
+        </div>
+      )}
       <section className="py-12 md:py-20 bg-gradient-soft">
         <div className="container">
           <SectionHeader
