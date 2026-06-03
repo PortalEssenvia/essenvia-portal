@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +27,7 @@ export const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const [displayName, setDisplayName] = useState<string>("");
 
   useEffect(() => {
@@ -119,6 +121,15 @@ export const Header = () => {
                 >
                   Minhas Práticas
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem
+                    onClick={() => navigate("/admin")}
+                    className="cursor-pointer text-verde-profundo"
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Painel Admin
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onClick={handleSignOut}
                   className="cursor-pointer text-red-500 focus:text-red-500"
