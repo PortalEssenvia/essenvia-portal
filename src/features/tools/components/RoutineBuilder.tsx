@@ -8,14 +8,28 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { PracticesConfig } from "../hooks/usePractices";
 import { ROUTINE_CATEGORIES, ROUTINE_TEMPLATES, WEEK_DAYS, PRACTICES } from "../constants";
-import type { RoutineActivity, RoutineCategory, WeekDay } from "../types";
+import type { RoutineActivity, RoutineCategory, WeekDay, PracticeId } from "../types";
 import { useRoutineActivities, useRoutineDone } from "../hooks/usePractices";
 import { uid, minutesBetween } from "../utils";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Check, Calendar, List, LayoutGrid } from "lucide-react";
+import { Plus, Trash2, Pencil, Check, Calendar, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface Props { practicesCfg: PracticesConfig; }
+interface Props {
+  practicesCfg: PracticesConfig;
+  /**
+   * FIX 02 — Lista de IDs de práticas já concluídas hoje (vinda de useDailyDone em Ferramentas.tsx).
+   * Permite que a Rotina mostre como concluídas as atividades vinculadas a práticas
+   * que o usuário marcou na tela "Práticas de Hoje".
+   */
+  practicesDone: PracticeId[];
+  /**
+   * FIX 02 — Callback chamado quando o usuário marca como concluída uma atividade
+   * da rotina que está vinculada a uma prática. Isso sincroniza o estado de volta
+   * para a tela "Práticas de Hoje".
+   */
+  onPracticeDone: (id: PracticeId) => void;
+}
 
 const categoryIcon = (c: RoutineCategory) => ROUTINE_CATEGORIES.find((x) => x.value === c)?.icon || "📌";
 
@@ -82,7 +96,7 @@ function ActivityForm({ initial, onSave, onCancel }: { initial?: Partial<Routine
   );
 }
 
-export function RoutineBuilder({ practicesCfg }: Props) {
+export function RoutineBuilder({ practicesCfg, practicesDone, onPracticeDone }: Props) {
   const [activities, setActivities] = useRoutineActivities<RoutineActivity>();
   const [doneIds, toggleDoneId] = useRoutineDone();
   const [view, setView] = useState<"list" | "timeline">("timeline");
@@ -113,7 +127,38 @@ export function RoutineBuilder({ practicesCfg }: Props) {
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
   }, [activities, practicesCfg, now]);
 
-  const completed = doneIds.length;
+  /**
+   * FIX 02 — `isActivityDone` verifica se uma atividade está concluída considerando
+   * DUAS fontes de verdade:
+   * 1. `doneIds` — atividades marcadas diretamente na tela "Minha Rotina"
+   * 2. `practicesDone` — práticas marcadas em "Práticas de Hoje" (via prop do pai)
+   *
+   * Isso garante que se o usuário conclui "Oração" em "Práticas de Hoje",
+   * a atividade "Oração" em "Minha Rotina" também aparece como concluída.
+   */
+  const isActivityDone = (a: RoutineActivity): boolean => {
+    if (doneIds.includes(a.id)) return true;
+    // Se a atividade tem um practiceId vinculado, verifica se a prática foi concluída
+    if (a.practiceId && practicesDone.includes(a.practiceId as PracticeId)) return true;
+    return false;
+  };
+
+  /**
+   * FIX 02 — `handleToggleDone` agora sincroniza nos dois sentidos:
+   * - Se a atividade tem practiceId, chama `onPracticeDone` para atualizar
+   *   "Práticas de Hoje" também.
+   * - Sempre chama `toggleDoneId` para atualizar o estado local da rotina.
+   */
+  const handleToggleDone = (a: RoutineActivity) => {
+    toggleDoneId(a.id);
+    // FIX 02: sincroniza com "Práticas de Hoje" se houver vínculo
+    if (a.practiceId && !practicesDone.includes(a.practiceId as PracticeId)) {
+      onPracticeDone(a.practiceId as PracticeId);
+    }
+  };
+
+  // FIX 02: completed considera ambas as fontes
+  const completed = merged.filter((a) => isActivityDone(a)).length;
   const total = merged.length;
   const progress = total ? Math.round((completed / total) * 100) : 0;
 
@@ -138,8 +183,6 @@ export function RoutineBuilder({ practicesCfg }: Props) {
     setActivities(tpl.activities.map((a) => ({ ...a, id: uid() })));
     toast.success(`Template "${tpl.name}" aplicado`);
   };
-
-  const toggleDone = (id: string) => toggleDoneId(id);
 
   return (
     <div className="space-y-6">
@@ -183,7 +226,8 @@ export function RoutineBuilder({ practicesCfg }: Props) {
           <div className="absolute left-16 top-0 bottom-0 w-px bg-bege" />
           <div className="space-y-3">
             {merged.map((a) => {
-              const isDone = doneIds.includes(a.id);
+              // FIX 02: usa isActivityDone que considera ambas as fontes
+              const isDone = isActivityDone(a);
               const cur = isCurrent(a);
               const dur = minutesBetween(a.startTime, a.endTime);
               return (
@@ -201,7 +245,8 @@ export function RoutineBuilder({ practicesCfg }: Props) {
                         <p className="text-xs text-muted-foreground">{a.startTime} – {a.endTime} · {dur} min · {a.category}</p>
                         {a.notes && <p className="text-xs text-muted-foreground mt-1">{a.notes}</p>}
                       </div>
-                      <Button size="icon" variant="ghost" onClick={() => toggleDone(a.id)} className={cn(isDone && "text-verde-medio")}><Check className="w-4 h-4" /></Button>
+                      {/* FIX 02: handleToggleDone sincroniza entre as duas telas */}
+                      <Button size="icon" variant="ghost" onClick={() => handleToggleDone(a)} className={cn(isDone && "text-verde-medio")}><Check className="w-4 h-4" /></Button>
                       {!a.practiceId && (
                         <>
                           <Dialog open={editingId === a.id} onOpenChange={(o) => setEditingId(o ? a.id : null)}>
@@ -224,7 +269,8 @@ export function RoutineBuilder({ practicesCfg }: Props) {
       ) : (
         <div className="space-y-2">
           {merged.map((a) => {
-            const isDone = doneIds.includes(a.id);
+            // FIX 02: usa isActivityDone que considera ambas as fontes
+            const isDone = isActivityDone(a);
             return (
               <div key={a.id} className={cn("flex items-center gap-3 p-3 rounded-lg border", isDone ? "bg-verde-medio/5 border-verde-medio/40" : "bg-bege-claro/60 border-bege")}>
                 <span className="text-xl">{categoryIcon(a.category)}</span>
@@ -232,7 +278,8 @@ export function RoutineBuilder({ practicesCfg }: Props) {
                   <p className={cn("font-medium text-verde-profundo", isDone && "line-through opacity-60")}>{a.name}</p>
                   <p className="text-xs text-muted-foreground">{a.startTime} – {a.endTime} · {a.category}</p>
                 </div>
-                <Button size="icon" variant="ghost" onClick={() => toggleDone(a.id)}><Check className={cn("w-4 h-4", isDone && "text-verde-medio")} /></Button>
+                {/* FIX 02: handleToggleDone sincroniza entre as duas telas */}
+                <Button size="icon" variant="ghost" onClick={() => handleToggleDone(a)}><Check className={cn("w-4 h-4", isDone && "text-verde-medio")} /></Button>
                 {!a.practiceId && <Button size="icon" variant="ghost" onClick={() => setActivities(activities.filter((x) => x.id !== a.id))}><Trash2 className="w-4 h-4" /></Button>}
               </div>
             );
