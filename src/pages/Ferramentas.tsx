@@ -6,7 +6,7 @@ import { Flame } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-import { PRACTICES, PRACTICE_IDS } from "@/features/tools/constants";
+import { PRACTICES, PRACTICE_IDS, localDateKey } from "@/features/tools/constants";
 import { useDailyDone, useDailyHistory, usePracticesConfig, useStreak } from "@/features/tools/hooks/usePractices";
 import type { PracticeId } from "@/features/tools/types";
 import { PracticeCard } from "@/features/tools/components/PracticeCard";
@@ -27,6 +27,12 @@ const Ferramentas = () => {
   const streak = useStreak();
   const history = useDailyHistory(35);
   const [open, setOpen] = useState<PracticeId | null>(null);
+
+  /**
+   * FIX 01 — Usa `new Date()` apenas para calcular o calendário/semana,
+   * mas todas as comparações de data usam `localDateKey()` ao invés de
+   * `toISOString().slice(0,10)` (UTC) para garantir o fuso horário correto.
+   */
   const [now] = useState(new Date());
 
   const handleToggle = (id: PracticeId) => {
@@ -61,21 +67,35 @@ const Ferramentas = () => {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstWeekday = new Date(year, month, 1).getDay();
 
+  /**
+   * FIX 01 — dayStatus usa `localDateKey()` para construir a chave da data
+   * de forma correta no fuso do usuário, ao invés de `toISOString().slice(0,10)`.
+   * FIX 03 — O dia de hoje usa `done` (estado reativo atualizado em tempo real)
+   * para refletir as práticas concluídas imediatamente no calendário.
+   */
+  const todayLocalKey = localDateKey(now);
   const dayStatus = (day: number) => {
-    const k = new Date(year, month, day).toISOString().slice(0, 10);
-    const arr = (k === new Date().toISOString().slice(0, 10) ? done : history[k]) ?? [];
+    const k = localDateKey(new Date(year, month, day));
+    const arr = (k === todayLocalKey ? done : history[k]) ?? [];
     if (arr.length === PRACTICE_IDS.length) return "full";
     if (arr.length > 0) return "partial";
     return "empty";
   };
 
+  /**
+   * FIX 01 — O gráfico de "Últimos 7 dias" usa `localDateKey()` para calcular
+   * as datas corretamente no fuso horário do usuário.
+   * FIX 03 — O dia de hoje usa o estado `done` reativo para mostrar progresso
+   * em tempo real, sem depender de uma recarga ou nova busca no banco.
+   */
   const week = useMemo(() => {
     const out: { label: string; count: number; date: string }[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const k = d.toISOString().slice(0, 10);
-      const arr = (k === new Date().toISOString().slice(0, 10) ? done : history[k]) ?? [];
+      // FIX 01: usa localDateKey ao invés de toISOString().slice(0,10)
+      const k = localDateKey(d);
+      const arr = (k === todayLocalKey ? done : history[k]) ?? [];
       out.push({
         label: d.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "").slice(0, 3),
         count: arr.length,
@@ -83,7 +103,7 @@ const Ferramentas = () => {
       });
     }
     return out;
-  }, [done, history]);
+  }, [done, history, todayLocalKey]);
 
   return (
     <>
@@ -204,9 +224,19 @@ const Ferramentas = () => {
               </div>
             </TabsContent>
 
+            {/**
+             * FIX 02 — `done` (estado reativo das práticas do dia) é passado ao
+             * RoutineBuilder. Com isso, quando o usuário marca uma prática como
+             * concluída em "Práticas de Hoje", a atividade vinculada em "Minha Rotina"
+             * também aparece como concluída automaticamente (e vice-versa via onPracticeDone).
+             */}
             <TabsContent value="rotina">
               <Card className="p-6 md:p-8 bg-card shadow-soft border-bege">
-                <RoutineBuilder practicesCfg={cfg} />
+                <RoutineBuilder
+                  practicesCfg={cfg}
+                  practicesDone={done}
+                  onPracticeDone={handleComplete}
+                />
               </Card>
             </TabsContent>
           </Tabs>
