@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/sections/SectionHeader";
 import { ChevronDown, Sparkles, Unlock, Sprout, Sunrise, RefreshCw, Building2, Brain, Zap, Heart, TrendingUp, Target, Award, Star, ShieldCheck } from "lucide-react";
 import heroImg from "@/assets/hero-path.jpg";
+import { useSiteContent } from "@/hooks/useSiteContent";
 
 const phrases = [
   "Você não precisa de mais motivação. Precisa de um caminho.",
@@ -43,6 +44,10 @@ const testimonials = [
 ];
 
 const Home = () => {
+  const { get } = useSiteContent("home");
+  const heroTitle = get("hero_title", "Reconecte-se. Reprograme-se. Renove-se.");
+  const heroSubtitle = get("hero_subtitle", "Um caminho completo para transformar sua vida por dentro e por fora.");
+  const ctaText = get("cta_text", "Você não precisa estar pronto. Precisa apenas começar.");
   return (
     <>
       {/* HERO */}
@@ -53,11 +58,11 @@ const Home = () => {
         </div>
         <div className="container relative z-10 py-24 max-w-3xl">
           <p className="text-dourado tracking-[0.3em] text-xs uppercase mb-6 animate-fade-in">Consciência • Cura • Transformação • Propósito</p>
-          <h1 className="font-display text-5xl md:text-7xl text-bege-claro leading-tight mb-6 animate-slide-up">
-            Reconecte-se. <br />Reprograme-se. <br /><span className="text-dourado">Renove-se.</span>
+          <h1 className="font-display text-5xl md:text-7xl text-bege-claro leading-tight mb-6 animate-slide-up whitespace-pre-line">
+            {heroTitle}
           </h1>
-          <p className="text-lg md:text-xl text-bege/90 max-w-xl mb-10 leading-relaxed animate-slide-up">
-            Um caminho completo para transformar sua vida por dentro e por fora.
+          <p className="text-lg md:text-xl text-bege/90 max-w-xl mb-10 leading-relaxed animate-slide-up whitespace-pre-line">
+            {heroSubtitle}
           </p>
           <div className="flex flex-wrap gap-4 animate-slide-up">
             <Button asChild variant="hero" size="lg"><Link to="/entrar">Comece sua Jornada</Link></Button>
@@ -158,7 +163,7 @@ const Home = () => {
       <section className="py-28 bg-gradient-deep">
         <div className="container text-center max-w-2xl">
           <h2 className="font-display text-4xl md:text-5xl text-bege-claro mb-6">Sua jornada começa com um passo.</h2>
-          <p className="text-bege/80 mb-10 text-lg">Você não precisa estar pronto. Precisa apenas começar.</p>
+          <p className="text-bege/80 mb-10 text-lg whitespace-pre-line">{ctaText}</p>
           <Button asChild variant="hero" size="lg"><Link to="/entrar">Quero Começar Agora</Link></Button>
         </div>
       </section>
