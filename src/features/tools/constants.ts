@@ -34,7 +34,29 @@ export const STORAGE_KEYS = {
   prayers: "essenvia_prayers",
 } as const;
 
-export const todayKey = () => new Date().toISOString().slice(0, 10);
+/**
+ * FIX 01 — Retorna a data de hoje no fuso horário LOCAL do usuário (YYYY-MM-DD).
+ * O problema original usava `new Date().toISOString().slice(0, 10)` que sempre
+ * retorna a data em UTC. No Brasil (UTC-3), isso causava a data errada até as 03h da manhã.
+ */
+export const todayKey = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+/**
+ * Retorna uma data no formato YYYY-MM-DD no fuso horário LOCAL.
+ * Substitui o padrão `date.toISOString().slice(0, 10)` em todo o projeto.
+ */
+export const localDateKey = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 export const PRACTICE_IDS: PracticeId[] = PRACTICES.map((p) => p.id);
 
