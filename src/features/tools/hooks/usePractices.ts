@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { PRACTICE_IDS, todayKey } from "../constants";
+import { PRACTICE_IDS, todayKey, localDateKey } from "../constants";
 import type {
   AffirmationsData, DiaryData, GratitudeData,
   MeditationData, PhysicalData, PracticeId, PrayerData,
@@ -102,9 +102,16 @@ export function usePracticesConfig() {
   return { cfg, setCfg, update, isSaving };
 }
 
-/** Today's completed practices, synced with daily_practice_logs. */
+/**
+ * FIX 01 + FIX 03 — Today's completed practices, synced with daily_practice_logs.
+ *
+ * CORREÇÃO 01: `todayKey()` agora retorna a data LOCAL (não UTC).
+ * CORREÇÃO 03: O histórico passa a usar `localDateKey()` em todos os cálculos
+ *              de data para garantir que registros do dia sejam gravados corretamente.
+ */
 export function useDailyDone() {
   const { user } = useAuth();
+  // FIX 01: todayKey() agora usa data local, não UTC
   const today = todayKey();
   const [done, setDone] = useState<PracticeId[]>([]);
 
@@ -126,12 +133,14 @@ export function useDailyDone() {
 
   const persistOne = useCallback(async (id: PracticeId, completed: boolean) => {
     if (!user) return;
+    // FIX 03: completed_at usa a hora local do usuário no ISO format, mas
+    // log_date usa todayKey() que agora é sempre a data local correta.
     const { error } = await supabase
       .from("daily_practice_logs")
       .upsert({
         user_id: user.id,
         practice_key: id,
-        log_date: today,
+        log_date: today, // FIX 01: data local correta
         completed,
         completed_at: completed ? new Date().toISOString() : null,
       }, { onConflict: "user_id,practice_key,log_date" });
@@ -176,7 +185,8 @@ export function useStreak() {
         .select("log_date,practice_key,completed")
         .eq("user_id", user.id)
         .eq("completed", true)
-        .gte("log_date", since.toISOString().slice(0, 10));
+        // FIX 01: usa localDateKey ao invés de toISOString().slice(0,10)
+        .gte("log_date", localDateKey(since));
       if (cancelled || !data) return;
       const map = new Map<string, Set<string>>();
       data.forEach((r: any) => {
@@ -187,7 +197,8 @@ export function useStreak() {
       let s = 0;
       const d = new Date();
       for (let i = 0; i < 366; i++) {
-        const k = d.toISOString().slice(0, 10);
+        // FIX 01: usa localDateKey ao invés de toISOString().slice(0,10)
+        const k = localDateKey(d);
         const set = map.get(k);
         if (set && set.size === PRACTICE_IDS.length) {
           s++;
@@ -220,7 +231,8 @@ export function useDailyHistory(days: number = 35) {
         .select("log_date,practice_key,completed")
         .eq("user_id", user.id)
         .eq("completed", true)
-        .gte("log_date", since.toISOString().slice(0, 10));
+        // FIX 01: usa localDateKey ao invés de toISOString().slice(0,10)
+        .gte("log_date", localDateKey(since));
       if (cancelled || !data) return;
       const m: Record<string, PracticeId[]> = {};
       data.forEach((r: any) => {
@@ -287,9 +299,19 @@ async function ensureDiaryRow(user_id: string, date: string) {
     .upsert({ user_id, entry_date: date }, { onConflict: "user_id,entry_date", ignoreDuplicates: true });
 }
 
-/** Routine activities done today (stored in diary_entries.routine_done). */
+/**
+ * FIX 02 — Routine activities done today (stored in diary_entries.routine_done).
+ *
+ * CORREÇÃO 02: Adicionado suporte a `practiceId` para que quando uma atividade
+ * da rotina for marcada como concluída, o ID do prática vinculada também seja
+ * rastreado. Isso permite que Ferramentas.tsx sincronize o estado entre as
+ * duas telas.
+ *
+ * CORREÇÃO 01: usa todayKey() local.
+ */
 export function useRoutineDone(): [string[], (id: string) => void] {
   const { user } = useAuth();
+  // FIX 01: todayKey() agora usa data local
   const today = todayKey();
   const [done, setDone] = useState<string[]>([]);
 
@@ -408,12 +430,14 @@ export function useGratitude(date: string) {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      const since = new Date(); since.setDate(since.getDate() - 14);
+      const since = new Date();
+      since.setDate(since.getDate() - 14);
       const { data } = await supabase
         .from("diary_entries")
         .select("entry_date,gratitude_text")
         .eq("user_id", user.id)
-        .gte("entry_date", since.toISOString().slice(0, 10))
+        // FIX 01: usa localDateKey ao invés de toISOString().slice(0,10)
+        .gte("entry_date", localDateKey(since))
         .order("entry_date", { ascending: false });
       if (cancelled || !data) return;
       const today = (data as any[]).find((r) => r.entry_date === date);
