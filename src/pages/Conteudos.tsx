@@ -87,7 +87,8 @@ const Conteudos = () => {
               allowFullScreen
               className="w-full h-full"
             />
-            <div className="absolute inset-0 pointer-events-none" />
+            {/* Bloqueia toda interação com o iframe (hover/click) para que nenhum overlay do YouTube apareça */}
+            <div className="absolute inset-0 z-40" style={{ pointerEvents: "auto" }} />
             <button
               onClick={() => setActive(null)}
               aria-label="Fechar"
