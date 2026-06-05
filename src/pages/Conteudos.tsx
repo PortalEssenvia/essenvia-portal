@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SectionHeader } from "@/components/sections/SectionHeader";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Play } from "lucide-react";
+import { Play, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { youtubeEmbed, youtubeThumb } from "@/lib/youtube";
 
@@ -76,10 +76,10 @@ const Conteudos = () => {
       </div>
     </section>
     <Dialog open={!!active} onOpenChange={(o) => !o && setActive(null)}>
-      <DialogContent className="max-w-3xl p-0 bg-black border-0">
+      <DialogContent className="max-w-3xl p-0 bg-black border-0 [&>button]:hidden">
         <DialogTitle className="sr-only">{active?.title}</DialogTitle>
         {active && (
-          <div className="aspect-video">
+          <div className="aspect-video relative">
             <iframe
               src={youtubeEmbed(active.youtube_url) || ""}
               title={active.title}
@@ -87,6 +87,14 @@ const Conteudos = () => {
               allowFullScreen
               className="w-full h-full"
             />
+            <div className="absolute inset-0 pointer-events-none" />
+            <button
+              onClick={() => setActive(null)}
+              aria-label="Fechar"
+              className="absolute -top-3 -right-3 md:top-2 md:right-2 z-50 w-10 h-10 rounded-full bg-black/80 hover:bg-black text-white flex items-center justify-center shadow-lg ring-1 ring-white/20"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         )}
       </DialogContent>
