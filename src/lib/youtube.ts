@@ -19,5 +19,17 @@ export function youtubeThumb(url: string): string | null {
 
 export function youtubeEmbed(url: string): string | null {
   const id = extractYoutubeId(url);
-  return id ? `https://www.youtube.com/embed/${id}?autoplay=1&rel=0` : null;
+  if (!id) return null;
+  const params = new URLSearchParams({
+    autoplay: "1",
+    controls: "0",
+    modestbranding: "1",
+    rel: "0",
+    showinfo: "0",
+    iv_load_policy: "3",
+    disablekb: "1",
+    fs: "0",
+    playsinline: "1",
+  });
+  return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
 }

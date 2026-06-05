@@ -1,65 +1,31 @@
-## Visão geral
+## Objetivo
+No modal de vídeo da página Conteúdos, esconder todos os controles/branding do YouTube (play/pause, barra de progresso, título, logo YouTube, "Mais vídeos", botão de inscrever-se, etc.) e exibir apenas um botão "Fechar" (X) controlado por nós.
 
-Crio uma área `/admin` protegida por role `admin`, com um painel lateral para editar todo o conteúdo dinâmico do site. As páginas públicas passam a ler do banco. Vídeos do YouTube abrem em modal embedado.
+## Mudanças
 
-## Banco de dados (1 migração)
+### 1. `src/lib/youtube.ts`
+Atualizar `youtubeEmbed()` para acrescentar parâmetros que removem ao máximo a UI do YouTube:
+- `controls=0` — esconde barra de controles
+- `modestbranding=1` — remove logo do YouTube na barra
+- `rel=0` — não sugere vídeos relacionados de outros canais
+- `showinfo=0` — legacy, ainda ajuda em alguns clientes
+- `iv_load_policy=3` — remove anotações
+- `disablekb=1` — desabilita teclado
+- `fs=0` — esconde botão fullscreen
+- `playsinline=1` — evita fullscreen automático no iOS
+- `autoplay=1&mute=0` — mantém autoplay (autoplay com som pode ser bloqueado pelo navegador; se necessário entraremos com `mute=1` + botão custom de som — ver "Observação" abaixo)
 
-**Tabela `user_roles`** + enum `app_role` + função `has_role(uuid, app_role)` (security definer) — padrão recomendado, evita recursão de RLS.
+### 2. `src/pages/Conteudos.tsx`
+No `<DialogContent>` do modal:
+- Adicionar um botão "Fechar" customizado (ícone X) posicionado no canto superior direito, fora da área do iframe (ou sobreposto com z-index alto), que chama `setActive(null)`.
+- Esconder o botão `X` padrão do `DialogContent` do shadcn (já existe um — vamos manter ou estilizar; se duplicar, sobrescrevemos com CSS/classe).
+- Envolver o `<iframe>` numa div com `pointer-events-none` opcional? **Não** — isso bloquearia o áudio/play. Em vez disso, sobrepor uma camada transparente (`absolute inset-0`) acima do iframe para capturar/ignorar cliques do usuário no player, evitando que ele interaja com a área que faria os controles aparecerem ao mover o mouse. Essa camada pode ter `pointer-events: auto` apenas para "comer" hover/clicks. Como `controls=0`, mesmo sem essa camada os botões já não aparecem — então a camada é opcional e só será adicionada se observarmos resíduos visuais.
 
-**Tabela `site_content`** — chave/valor genérico para textos das páginas
-- `page` (home, metodo, programas, cursos, comunidade)
-- `section_key` (ex: hero_title, hero_subtitle, cta_text)
-- `value` (texto)
-- Único por (page, section_key)
-- RLS: leitura pública, escrita só admin
+## Observação importante
+Com `controls=0` o YouTube **não exibe** play/pause, barra de progresso, volume, CC, settings, fullscreen, título, "Mais vídeos" nem o botão YouTube no canto. É exatamente o que o usuário pediu. O vídeo toca automaticamente (autoplay) e o único controle é o botão "Fechar" que adicionaremos.
 
-**Tabela `blog_posts`**
-- title, category, summary, sort_order, published
-- RLS: leitura pública (published=true), escrita só admin
+Limitação técnica: o YouTube não permite ocultar 100% via querystring em todos os navegadores móveis (especialmente iOS Safari). Para esses casos a camada transparente acima resolve.
 
-**Tabela `videos`**
-- title, youtube_url, sort_order, published
-- RLS: leitura pública, escrita só admin
-
-**Tabela `testimonials`**
-- name, role, content, avatar_url, sort_order, published
-- RLS: leitura pública, escrita só admin
-
-Seed inicial com os dados já existentes em `Conteudos.tsx`, `Depoimentos.tsx`, etc.
-
-## Frontend
-
-**Proteção**
-- `useIsAdmin()` hook (consulta `has_role`)
-- `<AdminRoute>` que redireciona não-admins para `/`
-
-**Layout admin** (`/admin/*`)
-- Sidebar (shadcn) com itens: Páginas, Blog, Vídeos, Depoimentos
-- Header com voltar ao site + sair
-
-**Páginas admin**
-- `/admin` → dashboard simples
-- `/admin/paginas` → editor por página (Home, Método, Programas, Cursos, Comunidade): formulários com inputs/textareas por section_key, salvar com toast
-- `/admin/blog` → lista + form (criar/editar/remover) com título, categoria (select), resumo, ordem, publicado
-- `/admin/videos` → lista + form com título, URL do YouTube, ordem; valida URL e extrai videoId
-- `/admin/depoimentos` → lista + form
-
-**Páginas públicas atualizadas**
-- `Conteudos.tsx`: lê `blog_posts` e `videos` do banco; vídeos abrem em **modal com iframe** do YouTube (embed)
-- `Depoimentos.tsx`: lê `testimonials`
-- `Home/Metodo/Programas/Cursos/Comunidade`: textos principais vêm de `site_content` com fallback aos atuais
-
-**Header**
-- Item "Admin" aparece no menu dropdown apenas se usuário tem role admin
-
-## Como te tornar admin
-
-Após a migração, rode no banco:
-```sql
-INSERT INTO user_roles (user_id, role) VALUES ('<seu-user-id>', 'admin');
-```
-Posso fazer isso por você se me passar seu e-mail logado.
-
-## Escopo desta entrega
-
-Foco no MVP funcional: CRUD completo das 4 áreas + edição de textos-chave das páginas principais + modal de vídeo. Não inclui upload de imagens (capa de blog, avatares) — fica como próximo passo se quiser.
+## Arquivos afetados
+- `src/lib/youtube.ts` — atualizar parâmetros do embed
+- `src/pages/Conteudos.tsx` — botão de fechar customizado + camada de bloqueio de hover
