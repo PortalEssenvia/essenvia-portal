@@ -7,16 +7,17 @@ import { Play, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { youtubeEmbed, youtubeThumb } from "@/lib/youtube";
 
-interface Post { id: string; title: string; category: string; summary: string; }
+interface Post { id: string; title: string; category: string; summary: string; content: string | null; image_url: string | null; }
 interface Video { id: string; title: string; youtube_url: string; }
 
 const Conteudos = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
   const [active, setActive] = useState<Video | null>(null);
+  const [activePost, setActivePost] = useState<Post | null>(null);
 
   useEffect(() => {
-    supabase.from("blog_posts").select("id,title,category,summary").eq("published", true).order("sort_order")
+    supabase.from("blog_posts").select("id,title,category,summary,content,image_url").eq("published", true).order("sort_order")
       .then(({ data }) => setPosts((data as Post[]) || []));
     supabase.from("videos").select("id,title,youtube_url").eq("published", true).order("sort_order")
       .then(({ data }) => setVideos((data as Video[]) || []));
@@ -40,8 +41,10 @@ const Conteudos = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {posts.length === 0 && <p className="text-muted-foreground col-span-full text-center">Em breve novos artigos.</p>}
               {posts.map((a) => (
-                <Card key={a.id} className="overflow-hidden bg-card border-bege shadow-card hover:shadow-soft transition-smooth cursor-pointer">
-                  <div className="h-40 bg-gradient-soft" />
+                <Card key={a.id} onClick={() => setActivePost(a)} className="overflow-hidden bg-card border-bege shadow-card hover:shadow-soft transition-smooth cursor-pointer">
+                  <div className="h-40 bg-gradient-soft overflow-hidden">
+                    {a.image_url && <img src={a.image_url} alt={a.title} className="w-full h-full object-cover" />}
+                  </div>
                   <div className="p-6">
                     <span className="inline-block text-xs px-3 py-1 rounded-full font-semibold mb-3 bg-dourado/20 text-dourado">{a.category}</span>
                     <h3 className="font-display text-lg text-verde-profundo leading-snug">{a.title}</h3>
@@ -99,6 +102,27 @@ const Conteudos = () => {
               <X className="w-5 h-5" />
             </button>
           </div>
+        )}
+      </DialogContent>
+    </Dialog>
+    <Dialog open={!!activePost} onOpenChange={(o) => !o && setActivePost(null)}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 bg-card">
+        {activePost && (
+          <article>
+            {activePost.image_url && (
+              <img src={activePost.image_url} alt={activePost.title} className="w-full h-64 object-cover" />
+            )}
+            <div className="p-8">
+              <span className="inline-block text-xs px-3 py-1 rounded-full font-semibold mb-3 bg-dourado/20 text-dourado">{activePost.category}</span>
+              <DialogTitle className="font-display text-3xl text-verde-profundo leading-tight mb-4">{activePost.title}</DialogTitle>
+              {activePost.summary && <p className="text-muted-foreground italic mb-6">{activePost.summary}</p>}
+              <div className="prose prose-sm md:prose-base max-w-none text-foreground">
+                {(activePost.content || "Conteúdo em breve.").split(/\n\n+/).map((p, i) => (
+                  <p key={i} className="mb-4 whitespace-pre-line leading-relaxed">{p}</p>
+                ))}
+              </div>
+            </div>
+          </article>
         )}
       </DialogContent>
     </Dialog>

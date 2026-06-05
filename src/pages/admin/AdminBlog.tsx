@@ -10,9 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
-interface Post { id: string; title: string; category: string; summary: string; sort_order: number; published: boolean; }
+interface Post { id: string; title: string; category: string; summary: string; content: string; image_url: string; sort_order: number; published: boolean; }
 
-const empty: Omit<Post, "id"> = { title: "", category: "Geral", summary: "", sort_order: 0, published: true };
+const empty: Omit<Post, "id"> = { title: "", category: "Geral", summary: "", content: "", image_url: "", sort_order: 0, published: true };
 
 export default function AdminBlog() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -27,7 +27,7 @@ export default function AdminBlog() {
   useEffect(() => { load(); }, []);
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
-  const openEdit = (p: Post) => { setEditing(p); setForm({ title: p.title, category: p.category, summary: p.summary, sort_order: p.sort_order, published: p.published }); setOpen(true); };
+  const openEdit = (p: Post) => { setEditing(p); setForm({ title: p.title, category: p.category, summary: p.summary, content: p.content || "", image_url: p.image_url || "", sort_order: p.sort_order, published: p.published }); setOpen(true); };
 
   const save = async () => {
     if (!form.title.trim()) { toast.error("Título obrigatório"); return; }
@@ -74,12 +74,14 @@ export default function AdminBlog() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Editar artigo" : "Novo artigo"}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2"><Label>Título</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
             <div className="space-y-2"><Label>Categoria</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Rotina, Emocional, Espiritualidade..." /></div>
+            <div className="space-y-2"><Label>URL da imagem de capa</Label><Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." />{form.image_url && <img src={form.image_url} alt="Preview" className="mt-2 w-full h-40 object-cover rounded-md border border-bege" />}</div>
             <div className="space-y-2"><Label>Resumo</Label><Textarea value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} className="min-h-[100px]" /></div>
+            <div className="space-y-2"><Label>Conteúdo completo</Label><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="min-h-[240px]" placeholder="Escreva o artigo completo aqui. Use linhas em branco para separar parágrafos." /></div>
             <div className="space-y-2"><Label>Ordem</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })} /></div>
             <div className="flex items-center gap-2"><Switch checked={form.published} onCheckedChange={(v) => setForm({ ...form, published: v })} /><Label>Publicado</Label></div>
             <Button onClick={save} variant="gold" className="w-full">Salvar</Button>

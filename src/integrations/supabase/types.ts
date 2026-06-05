@@ -55,8 +55,10 @@ export type Database = {
       blog_posts: {
         Row: {
           category: string
+          content: string | null
           created_at: string
           id: string
+          image_url: string | null
           published: boolean
           sort_order: number
           summary: string
@@ -65,8 +67,10 @@ export type Database = {
         }
         Insert: {
           category?: string
+          content?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           published?: boolean
           sort_order?: number
           summary?: string
@@ -75,8 +79,10 @@ export type Database = {
         }
         Update: {
           category?: string
+          content?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
           published?: boolean
           sort_order?: number
           summary?: string

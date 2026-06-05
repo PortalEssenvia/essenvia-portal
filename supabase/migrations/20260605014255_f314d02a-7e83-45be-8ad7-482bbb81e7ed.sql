@@ -1,0 +1,3 @@
+ALTER TABLE public.blog_posts 
+  ADD COLUMN IF NOT EXISTS content TEXT,
+  ADD COLUMN IF NOT EXISTS image_url TEXT;
