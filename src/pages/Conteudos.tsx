@@ -79,13 +79,15 @@ const Conteudos = () => {
       <DialogContent className="max-w-3xl p-0 bg-black border-0 [&>button]:hidden">
         <DialogTitle className="sr-only">{active?.title}</DialogTitle>
         {active && (
-          <div className="aspect-video relative">
+          <div className="aspect-video relative overflow-hidden">
+            {/* Iframe superdimensionado para cortar título (topo) e barra do YouTube (base) que aparecem no carregamento */}
             <iframe
               src={youtubeEmbed(active.youtube_url) || ""}
               title={active.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
-              className="w-full h-full"
+              className="absolute left-0 w-full"
+              style={{ top: "-60px", height: "calc(100% + 120px)" }}
             />
             {/* Bloqueia toda interação com o iframe (hover/click) para que nenhum overlay do YouTube apareça */}
             <div className="absolute inset-0 z-40" style={{ pointerEvents: "auto" }} />
