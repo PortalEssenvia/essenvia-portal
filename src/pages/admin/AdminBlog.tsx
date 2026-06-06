@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Post { id: string; title: string; category: string; summary: string; content: string; image_url: string; sort_order: number; published: boolean; }
@@ -19,6 +19,7 @@ export default function AdminBlog() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Post | null>(null);
   const [form, setForm] = useState(empty);
+  const [uploading, setUploading] = useState(false);
 
   const load = async () => {
     const { data } = await supabase.from("blog_posts").select("*").order("sort_order");
@@ -43,6 +44,22 @@ export default function AdminBlog() {
     const { error } = await supabase.from("blog_posts").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Removido"); load();
+  };
+
+  const handleUpload = async (file: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Selecione um arquivo de imagem"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Imagem muito grande (máx 5MB)"); return; }
+    setUploading(true);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("blog-images").upload(path, file, { upsert: false });
+    if (upErr) { toast.error(upErr.message); setUploading(false); return; }
+    const { data, error: urlErr } = await supabase.storage.from("blog-images").createSignedUrl(path, 60 * 60 * 24 * 365 * 50);
+    if (urlErr || !data) { toast.error(urlErr?.message || "Falha ao gerar URL"); setUploading(false); return; }
+    setForm((f) => ({ ...f, image_url: data.signedUrl }));
+    setUploading(false);
+    toast.success("Imagem enviada!");
   };
 
   return (
@@ -79,7 +96,18 @@ export default function AdminBlog() {
           <div className="space-y-4">
             <div className="space-y-2"><Label>Título</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
             <div className="space-y-2"><Label>Categoria</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Rotina, Emocional, Espiritualidade..." /></div>
-            <div className="space-y-2"><Label>URL da imagem de capa</Label><Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." />{form.image_url && <img src={form.image_url} alt="Preview" className="mt-2 w-full h-40 object-cover rounded-md border border-bege" />}</div>
+            <div className="space-y-2">
+              <Label>Imagem de capa</Label>
+              <div className="flex items-center gap-2">
+                <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="Cole uma URL ou envie um arquivo" />
+                <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => document.getElementById("blog-image-file")?.click()}>
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  <span className="ml-1">Enviar</span>
+                </Button>
+                <input id="blog-image-file" type="file" accept="image/*" className="hidden" onChange={(e) => { handleUpload(e.target.files?.[0] || null); e.target.value = ""; }} />
+              </div>
+              {form.image_url && <img src={form.image_url} alt="Preview" className="mt-2 w-full h-40 object-cover rounded-md border border-bege" />}
+            </div>
             <div className="space-y-2"><Label>Resumo</Label><Textarea value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} className="min-h-[100px]" /></div>
             <div className="space-y-2"><Label>Conteúdo completo</Label><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="min-h-[240px]" placeholder="Escreva o artigo completo aqui. Use linhas em branco para separar parágrafos." /></div>
             <div className="space-y-2"><Label>Ordem</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })} /></div>
