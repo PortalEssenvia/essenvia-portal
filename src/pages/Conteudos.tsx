@@ -42,8 +42,8 @@ const Conteudos = () => {
               {posts.length === 0 && <p className="text-muted-foreground col-span-full text-center">Em breve novos artigos.</p>}
               {posts.map((a) => (
                 <Card key={a.id} onClick={() => setActivePost(a)} className="overflow-hidden bg-card border-bege shadow-card hover:shadow-soft transition-smooth cursor-pointer">
-                  <div className="h-40 bg-gradient-soft overflow-hidden">
-                    {a.image_url && <img src={a.image_url} alt={a.title} className="w-full h-full object-cover" />}
+                  <div className="aspect-[4/3] bg-gradient-soft overflow-hidden">
+                    {a.image_url && <img src={a.image_url} alt={a.title} className="w-full h-full object-contain" />}
                   </div>
                   <div className="p-6">
                     <span className="inline-block text-xs px-3 py-1 rounded-full font-semibold mb-3 bg-dourado/20 text-dourado">{a.category}</span>
@@ -110,7 +110,7 @@ const Conteudos = () => {
         {activePost && (
           <article>
             {activePost.image_url && (
-              <img src={activePost.image_url} alt={activePost.title} className="w-full h-64 object-cover" />
+              <img src={activePost.image_url} alt={activePost.title} className="w-full max-h-[60vh] object-contain bg-bege-claro" />
             )}
             <div className="p-8">
               <span className="inline-block text-xs px-3 py-1 rounded-full font-semibold mb-3 bg-dourado/20 text-dourado">{activePost.category}</span>
