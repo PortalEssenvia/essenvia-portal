@@ -1,57 +1,31 @@
-## Rotina diária às 08:00 — daily_checks
+## Problema
 
-Vamos implementar um cron job interno no backend (Lovable Cloud) que roda todos os dias às 08:00 e garante que a tabela `daily_checks` contenha exatamente 1 registro com o dia atual em formato ISO (`AAAA-MM-DD`).
+No topo da home (antes do scroll), o header é transparente sobre a imagem escura do herói. Os textos do menu, logo "NOVA ESSENVIA" e o botão "Olá, Carlos" usam `text-verde-profundo` (verde escuro), ficando ilegíveis contra o fundo escuro.
 
-Como a aplicação é client-side (React/Vite), o agendamento não pode viver no frontend (não roda 24/7). Usaremos os recursos nativos do backend já disponíveis: **pg_cron + pg_net + Edge Function**. Isso continua funcionando mesmo após reinicializações e sem depender de serviços externos.
+## Solução
 
-### 1. Migração — criação da tabela
+Tornar o header adaptativo: claro quando sobre o herói (topo da página), e mantém o estilo atual (bege com texto verde) após o scroll.
 
-Criar `public.daily_checks`:
+### Mudanças em `src/components/layout/Header.tsx`
 
-- `id` uuid PK default `gen_random_uuid()`
-- `current_day` date not null unique
-- `created_at` timestamptz default `now()`
+1. **Estado `scrolled` já existe** — usá-lo para alternar cores.
+2. **Logo texto "NOVA ESSENVIA"**: `text-verde-profundo` quando scrolled, `text-bege-claro` (com leve drop-shadow) quando no topo.
+3. **Links de navegação**:
+   - Topo: `text-bege-claro` com hover `text-dourado-claro`; ativo `text-dourado-claro`.
+   - Scrolled: comportamento atual (verde-profundo / dourado).
+4. **Botão "Olá, {nome}"** (dropdown trigger):
+   - Topo: borda `border-dourado-claro`, texto `text-bege-claro`, hover `bg-bege-claro/10`.
+   - Scrolled: estilo atual.
+5. **Ícone do menu mobile**: mesma lógica de cor.
+6. **Sombra sutil** no texto claro (`drop-shadow-sm`) para legibilidade sobre fotos variadas.
+7. Adicionar uma leve faixa de gradiente no topo (`bg-gradient-to-b from-black/20 to-transparent`) apenas quando não-scrolled, para reforçar contraste sem cobrir a imagem.
 
-Configuração de acesso:
-- GRANT para `authenticated` (leitura) e `service_role` (tudo)
-- RLS habilitado
-- Política: qualquer usuário autenticado pode ler; escrita apenas via `service_role` (edge function)
+### Sem mudanças
 
-### 2. Edge Function — `daily-check`
+- Tokens de design (`index.css`, `tailwind.config.ts`) permanecem iguais.
+- Layout/estrutura, rotas, lógica de auth — intactos.
+- Header continua fixo e com mesma altura.
 
-`supabase/functions/daily-check/index.ts` usando o client com `SUPABASE_SERVICE_ROLE_KEY`:
+## Resultado
 
-1. Calcular o dia atual em ISO (`AAAA-MM-DD`) no fuso `America/Sao_Paulo`.
-2. `DELETE FROM daily_checks` (apaga tudo — sempre mantém apenas 1 registro).
-3. `INSERT` do novo registro com `current_day = hoje`.
-4. Usar `ON CONFLICT (current_day) DO NOTHING` como salvaguarda contra execuções duplicadas.
-5. Retornar JSON `{ ok: true, current_day }` com CORS.
-6. Logs claros em cada etapa.
-
-### 3. Agendamento — pg_cron + pg_net
-
-Habilitar extensões `pg_cron` e `pg_net` e registrar o job (via insert SQL — contém URL/anon key específicos do projeto e não deve virar migração compartilhada):
-
-```text
-cron.schedule(
-  'daily-check-0800',
-  '0 11 * * *',  -- 08:00 BRT = 11:00 UTC
-  net.http_post(url, headers, body)
-)
-```
-
-A função será chamada via HTTP POST diariamente. Se já houver job com o mesmo nome, fazemos `cron.unschedule` antes para evitar duplicidade.
-
-### 4. Comentários no código
-
-Cada etapa (cálculo da data, delete, insert, tratamento de erro) terá comentários em português explicando o funcionamento, conforme solicitado.
-
-### Detalhes técnicos
-
-- Fuso horário do "08:00": confirmar abaixo (assumindo Brasil/São Paulo por padrão).
-- A função roda com `verify_jwt = false` (padrão Lovable) e valida internamente que a chamada veio do cron via header `apikey`.
-- Não é necessário código no frontend — é uma rotina puramente de backend.
-
-### Pergunta antes de implementar
-
-Confirmar: o "08:00" é horário de **Brasília (America/Sao_Paulo)**, certo? Se for UTC ou outro fuso, ajusto o cron expression.
+Topo da página: menu e logo legíveis em bege claro sobre o herói. Após rolar, o header volta ao fundo bege com texto verde-profundo como hoje.
