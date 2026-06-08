@@ -11,6 +11,7 @@ import { useDailyDone, useDailyHistory, usePracticesConfig, useStreak } from "@/
 import type { PracticeId } from "@/features/tools/types";
 import { PracticeCard } from "@/features/tools/components/PracticeCard";
 import { RoutineBuilder } from "@/features/tools/components/RoutineBuilder";
+import { HistoryView } from "@/features/tools/components/HistoryView";
 
 import { PrayerPractice } from "@/features/tools/practices/PrayerPractice";
 import { AffirmationsPractice } from "@/features/tools/practices/AffirmationsPractice";
@@ -128,6 +129,7 @@ const Ferramentas = () => {
             <TabsList className="bg-bege border border-bege mb-8">
               <TabsTrigger value="praticas">🌿 Práticas</TabsTrigger>
               <TabsTrigger value="rotina">📅 Minha Rotina</TabsTrigger>
+              <TabsTrigger value="historico">📈 Histórico</TabsTrigger>
             </TabsList>
 
             <TabsContent value="praticas" className="space-y-8">
@@ -237,6 +239,13 @@ const Ferramentas = () => {
                   practicesDone={done}
                   onPracticeDone={handleComplete}
                 />
+              </Card>
+            </TabsContent>
+
+            {/* Histórico & evolução do usuário ao longo do tempo */}
+            <TabsContent value="historico">
+              <Card className="p-6 md:p-8 bg-card shadow-soft border-bege">
+                <HistoryView />
               </Card>
             </TabsContent>
           </Tabs>
