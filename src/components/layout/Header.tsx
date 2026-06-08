@@ -72,7 +72,7 @@ export const Header = () => {
         "fixed top-0 inset-x-0 z-50 transition-smooth",
         scrolled
           ? "bg-bege-claro/85 backdrop-blur-md shadow-soft"
-          : "bg-transparent"
+          : "bg-gradient-to-b from-black/40 via-black/20 to-transparent"
       )}
     >
       <div className="container flex items-center justify-between h-28 md:h-32">
@@ -82,7 +82,10 @@ export const Header = () => {
             alt="Nova Essenvia"
             className="h-24 md:h-32 lg:h-36 w-auto object-contain"
           />
-          <span className="font-serif text-xl md:text-2xl lg:text-3xl font-semibold tracking-wide text-verde-profundo leading-none">
+          <span className={cn(
+            "font-serif text-xl md:text-2xl lg:text-3xl font-semibold tracking-wide leading-none transition-colors",
+            scrolled ? "text-verde-profundo" : "text-bege-claro drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+          )}>
             NOVA ESSENVIA
           </span>
         </Link>
@@ -95,8 +98,10 @@ export const Header = () => {
               end={l.to === "/"}
               className={({ isActive }) =>
                 cn(
-                  "text-sm font-medium tracking-wide transition-smooth hover:text-dourado",
-                  isActive ? "text-dourado" : "text-verde-profundo"
+                  "text-sm font-medium tracking-wide transition-smooth",
+                  scrolled
+                    ? cn("hover:text-dourado", isActive ? "text-dourado" : "text-verde-profundo")
+                    : cn("hover:text-dourado-claro drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]", isActive ? "text-dourado-claro" : "text-bege-claro")
                 )
               }
             >
@@ -109,8 +114,13 @@ export const Header = () => {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-dourado text-verde-profundo hover:bg-dourado/10 transition-colors text-sm font-medium">
-                  <User className="w-4 h-4 text-dourado" />
+                <button className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-full border transition-colors text-sm font-medium",
+                  scrolled
+                    ? "border-dourado text-verde-profundo hover:bg-dourado/10"
+                    : "border-dourado-claro text-bege-claro hover:bg-bege-claro/10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+                )}>
+                  <User className={cn("w-4 h-4", scrolled ? "text-dourado" : "text-dourado-claro")} />
                   <span>Olá, {displayName}</span>
                 </button>
               </DropdownMenuTrigger>
@@ -148,7 +158,7 @@ export const Header = () => {
 
         <button
           aria-label="Abrir menu"
-          className="lg:hidden text-verde-profundo p-2"
+          className={cn("lg:hidden p-2 transition-colors", scrolled ? "text-verde-profundo" : "text-bege-claro")}
           onClick={() => setOpen((v) => !v)}
         >
           {open ? <X /> : <Menu />}
