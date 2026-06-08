@@ -91,6 +91,24 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_checks: {
+        Row: {
+          created_at: string
+          current_day: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          current_day: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          current_day?: string
+          id?: string
+        }
+        Relationships: []
+      }
       daily_practice_logs: {
         Row: {
           completed: boolean
