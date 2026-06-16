@@ -51,7 +51,9 @@ export default function AdminLayout() {
       </aside>
       <main className="flex-1 overflow-auto">
         <div className="p-8 max-w-5xl mx-auto">
-          <Outlet />
+          <div className="max-w-7xl mx-auto">
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>
