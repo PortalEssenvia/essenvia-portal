@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, User, Shield } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +15,7 @@ import {
 const baseLinks = [
   { to: "/", label: "Início" },
   { to: "/metodo", label: "Método" },
-  { to: "/programas", label: "Programas" },
+  { to: "/programas", label: "Os 7 Pilares" },
   { to: "/conteudos", label: "Conteúdos" },
   { to: "/comunidade", label: "Comunidade" },
 ];
@@ -27,7 +26,6 @@ export const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { isAdmin } = useIsAdmin();
   const [displayName, setDisplayName] = useState<string>("");
 
   useEffect(() => {
@@ -72,21 +70,18 @@ export const Header = () => {
         "fixed top-0 inset-x-0 z-50 transition-smooth",
         scrolled
           ? "bg-bege-claro/85 backdrop-blur-md shadow-soft"
-          : "bg-gradient-to-b from-black/40 via-black/20 to-transparent"
+          : "bg-transparent"
       )}
     >
       <div className="container flex items-center justify-between h-28 md:h-32">
         <Link to="/" className="flex items-center gap-1 py-2">
           <img
             src="/logo.png"
-            alt="Nova Essenvia"
+            alt="Método Renovação Constante"
             className="h-24 md:h-32 lg:h-36 w-auto object-contain"
           />
-          <span className={cn(
-            "font-serif text-xl md:text-2xl lg:text-3xl font-semibold tracking-wide leading-none transition-colors",
-            scrolled ? "text-verde-profundo" : "text-bege-claro drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
-          )}>
-            NOVA ESSENVIA
+          <span className="font-serif text-xl md:text-2xl lg:text-3xl font-semibold tracking-wide text-verde-profundo leading-none">
+            RENOVAÇÃO CONSTANTE
           </span>
         </Link>
 
@@ -98,10 +93,8 @@ export const Header = () => {
               end={l.to === "/"}
               className={({ isActive }) =>
                 cn(
-                  "text-sm font-medium tracking-wide transition-smooth",
-                  scrolled
-                    ? cn("hover:text-dourado", isActive ? "text-dourado" : "text-verde-profundo")
-                    : cn("hover:text-dourado-claro drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]", isActive ? "text-dourado-claro" : "text-bege-claro")
+                  "text-sm font-medium tracking-wide transition-smooth hover:text-dourado",
+                  isActive ? "text-dourado" : "text-verde-profundo"
                 )
               }
             >
@@ -114,13 +107,8 @@ export const Header = () => {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-full border transition-colors text-sm font-medium",
-                  scrolled
-                    ? "border-dourado text-verde-profundo hover:bg-dourado/10"
-                    : "border-dourado-claro text-bege-claro hover:bg-bege-claro/10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
-                )}>
-                  <User className={cn("w-4 h-4", scrolled ? "text-dourado" : "text-dourado-claro")} />
+                <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-dourado text-verde-profundo hover:bg-dourado/10 transition-colors text-sm font-medium">
+                  <User className="w-4 h-4 text-dourado" />
                   <span>Olá, {displayName}</span>
                 </button>
               </DropdownMenuTrigger>
@@ -131,15 +119,6 @@ export const Header = () => {
                 >
                   Minhas Práticas
                 </DropdownMenuItem>
-                {isAdmin && (
-                  <DropdownMenuItem
-                    onClick={() => navigate("/admin")}
-                    className="cursor-pointer text-verde-profundo"
-                  >
-                    <Shield className="w-4 h-4 mr-2" />
-                    Painel Admin
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuItem
                   onClick={handleSignOut}
                   className="cursor-pointer text-red-500 focus:text-red-500"
@@ -151,14 +130,14 @@ export const Header = () => {
             </DropdownMenu>
           ) : (
             <Button asChild variant="gold" size="lg">
-              <Link to="/entrar">Comece sua Jornada</Link>
+              <Link to="/entrar">Comece sua Renovação</Link>
             </Button>
           )}
         </div>
 
         <button
           aria-label="Abrir menu"
-          className={cn("lg:hidden p-2 transition-colors", scrolled ? "text-verde-profundo" : "text-bege-claro")}
+          className="lg:hidden text-verde-profundo p-2"
           onClick={() => setOpen((v) => !v)}
         >
           {open ? <X /> : <Menu />}
@@ -174,10 +153,7 @@ export const Header = () => {
                 to={l.to}
                 end={l.to === "/"}
                 className={({ isActive }) =>
-                  cn(
-                    "text-base py-2",
-                    isActive ? "text-dourado" : "text-verde-profundo"
-                  )
+                  cn("text-base py-2", isActive ? "text-dourado" : "text-verde-profundo")
                 }
               >
                 {l.label}
@@ -189,7 +165,7 @@ export const Header = () => {
               </Button>
             ) : (
               <Button asChild variant="gold" size="lg" className="mt-2">
-                <Link to="/entrar">Comece sua Jornada</Link>
+                <Link to="/entrar">Comece sua Renovação</Link>
               </Button>
             )}
           </nav>

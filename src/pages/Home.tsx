@@ -2,70 +2,96 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/sections/SectionHeader";
-import { ChevronDown, Sparkles, Unlock, Sprout, Sunrise, RefreshCw, Building2, Brain, Zap, Heart, TrendingUp, Target, Award, Star, ShieldCheck } from "lucide-react";
+import {
+  ChevronDown, Heart, Brain, Zap, Moon, Compass, Activity,
+  Sparkles, Star, Target, Award, TrendingUp, ShieldCheck, RefreshCw, Sunrise,
+} from "lucide-react";
 import heroImg from "@/assets/hero-path.jpg";
-import { useSiteContent } from "@/hooks/useSiteContent";
 
 const phrases = [
-  "Você não precisa de mais motivação. Precisa de um caminho.",
-  "A mudança começa quando você entende, não quando tenta.",
-  "Disciplina sem consciência não se sustenta.",
-  "Voltar para si é o início de tudo.",
+  "Renove suas emoções. Renove sua história. Renove sua vida.",
+  "A transformação começa quando você assume responsabilidade pelo seu crescimento.",
+  "Bloqueios emocionais podem ser reprocessados. Padrões podem ser interrompidos.",
+  "Toda pessoa possui capacidade de renovação contínua.",
 ];
 
 const pillars = [
-  { icon: Sprout, title: "Consciência", text: "Reconectar-se com quem você realmente é, vendo seus padrões com clareza." },
-  { icon: Unlock, title: "Libertação", text: "Romper ciclos de vícios, padrões e crenças que prendem sua vida." },
-  { icon: Sparkles, title: "Transformação", text: "Construir uma nova rotina, identidade e propósito para viver com leveza." },
+  {
+    icon: Heart,
+    title: "Renovação Emocional",
+    text: "Identificar e reduzir cargas emocionais associadas a medos, ansiedade, culpa e rejeição através da TRG.",
+  },
+  {
+    icon: RefreshCw,
+    title: "Renovação Sistêmica",
+    text: "Compreender padrões familiares e relacionais que influenciam sua vida atual através da Constelação Familiar.",
+  },
+  {
+    icon: Sparkles,
+    title: "Renovação de Propósito",
+    text: "Desenvolver significado, direção e coerência de vida — fortalecendo valores, gratidão e sentido existencial.",
+  },
 ];
 
 const phases = [
-  { icon: Sunrise, title: "Despertar", text: "Ver com clareza é o início da cura.", n: "01" },
-  { icon: Unlock, title: "Libertar", text: "Quebrar o que te prende para mudar de verdade.", n: "02" },
-  { icon: RefreshCw, title: "Reprogramar", text: "Criar novos padrões e uma nova identidade.", n: "03" },
-  { icon: Building2, title: "Sustentar", text: "Consolidar a transformação para a vida inteira.", n: "04" },
+  { icon: Sunrise, title: "Acolher", text: "Receber com presença e abertura.", n: "01" },
+  { icon: Brain, title: "Identificar", text: "Reconhecer padrões, bloqueios e origens.", n: "02" },
+  { icon: RefreshCw, title: "Reprocessar", text: "Transformar cargas emocionais com a TRG.", n: "03" },
+  { icon: Sparkles, title: "Renovar", text: "Consolidar a nova versão de você.", n: "04" },
 ];
 
 const benefits = [
-  { icon: Target, label: "Foco" },
-  { icon: Zap, label: "Motivação" },
-  { icon: Award, label: "Autoconfiança" },
+  { icon: Target, label: "Equilíbrio Emocional" },
+  { icon: Brain, label: "Clareza Mental" },
+  { icon: Heart, label: "Saúde Emocional" },
   { icon: TrendingUp, label: "Desenvolvimento Pessoal" },
-  { icon: Brain, label: "Concentração" },
-  { icon: ShieldCheck, label: "Disciplina" },
-  { icon: Sparkles, label: "Fé / Lei da Atração" },
-  { icon: Heart, label: "Reduz Stress e Ansiedade" },
+  { icon: Zap, label: "Energia e Motivação" },
+  { icon: ShieldCheck, label: "Disciplina Sustentável" },
+  { icon: Moon, label: "Qualidade do Sono" },
+  { icon: Compass, label: "Propósito de Vida" },
 ];
 
 const testimonials = [
-  { name: "Mariana S.", city: "São Paulo, SP", text: "Eu tentei tudo. A Nova Essenvia foi a primeira vez que entendi por quê. Hoje minha rotina é leve e real." },
-  { name: "Rafael C.", city: "Belo Horizonte, MG", text: "Em 60 dias consegui largar um vício de 12 anos. O método me deu um caminho, não só motivação." },
-  { name: "Ana Paula", city: "Curitiba, PR", text: "Voltei a meditar, dormir bem, me sentir presente. A Nova Essenvia me devolveu para mim mesma." },
+  {
+    name: "Mariana S.",
+    city: "São Paulo, SP",
+    text: "Pela primeira vez entendi por que repetia os mesmos padrões. O Método Renovação Constante me deu um caminho real de transformação.",
+  },
+  {
+    name: "Rafael C.",
+    city: "Belo Horizonte, MG",
+    text: "Em 60 dias consegui reprocessar traumas de anos. O método não alivia a dor — ele transforma a origem.",
+  },
+  {
+    name: "Ana Paula",
+    city: "Curitiba, PR",
+    text: "Voltei a dormir bem, a me sentir presente, a ter propósito. O MRC me devolveu a mim mesma.",
+  },
 ];
 
 const Home = () => {
-  const { get } = useSiteContent("home");
-  const heroTitle = get("hero_title", "Reconecte-se. Reprograme-se. Renove-se.");
-  const heroSubtitle = get("hero_subtitle", "Um caminho completo para transformar sua vida por dentro e por fora.");
-  const ctaText = get("cta_text", "Você não precisa estar pronto. Precisa apenas começar.");
   return (
     <>
       {/* HERO */}
       <section className="relative min-h-[92vh] flex items-center overflow-hidden -mt-20 pt-20">
         <div className="absolute inset-0">
-          <img src={heroImg} alt="Caminho ao amanhecer" className="w-full h-full object-cover" width={1920} height={1080} />
+          <img src={heroImg} alt="Caminho de renovação" className="w-full h-full object-cover" width={1920} height={1080} />
           <div className="absolute inset-0 bg-gradient-to-r from-verde-profundo/90 via-verde-profundo/70 to-transparent" />
         </div>
         <div className="container relative z-10 py-24 max-w-3xl">
-          <p className="text-dourado tracking-[0.3em] text-xs uppercase mb-6 animate-fade-in">Consciência • Cura • Transformação • Propósito</p>
-          <h1 className="font-display text-5xl md:text-7xl text-bege-claro leading-tight mb-6 animate-slide-up whitespace-pre-line">
-            {heroTitle}
+          <p className="text-dourado tracking-[0.3em] text-xs uppercase mb-6 animate-fade-in">
+            Emoções • Família • Mente • Corpo • Propósito
+          </p>
+          <h1 className="font-display text-5xl md:text-7xl text-bege-claro leading-tight mb-6 animate-slide-up">
+            Renove suas emoções.<br />Renove sua história.<br />
+            <span className="text-dourado">Renove sua vida.</span>
           </h1>
-          <p className="text-lg md:text-xl text-bege/90 max-w-xl mb-10 leading-relaxed animate-slide-up whitespace-pre-line">
-            {heroSubtitle}
+          <p className="text-lg md:text-xl text-bege/90 max-w-xl mb-10 leading-relaxed animate-slide-up">
+            O Método Renovação Constante integra emoções, sistema familiar, mente, corpo,
+            energia, propósito e hábitos para promover a renovação contínua do ser humano.
           </p>
           <div className="flex flex-wrap gap-4 animate-slide-up">
-            <Button asChild variant="hero" size="lg"><Link to="/entrar">Comece sua Jornada</Link></Button>
+            <Button asChild variant="hero" size="lg"><Link to="/entrar">Comece sua Renovação</Link></Button>
             <Button asChild variant="outlineGold" size="lg"><Link to="/metodo">Conheça o Método</Link></Button>
           </div>
         </div>
@@ -74,7 +100,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* PHRASES */}
+      {/* SLOGAN / FRASES */}
       <section className="bg-verde-profundo py-24">
         <div className="container grid md:grid-cols-2 gap-10 max-w-5xl">
           {phrases.map((p, i) => (
@@ -88,7 +114,11 @@ const Home = () => {
       {/* PILARES */}
       <section className="py-24 bg-gradient-soft">
         <div className="container">
-          <SectionHeader eyebrow="O que é a Nova Essenvia" title="Um sistema de transformação guiada" subtitle="Não somos mais um blog de autoajuda. Unimos espiritualidade, ciência e práticas terapêuticas para tratar a raiz dos conflitos." />
+          <SectionHeader
+            eyebrow="O que é o Método RC"
+            title="Renovação em todas as dimensões"
+            subtitle="O MRC compreende que a verdadeira transformação ocorre quando o indivíduo desenvolve equilíbrio emocional, consciência sistêmica, saúde física, clareza mental e conexão com seu propósito."
+          />
           <div className="grid md:grid-cols-3 gap-8 mt-16">
             {pillars.map((p) => (
               <Card key={p.title} className="p-8 text-center bg-card shadow-card hover:shadow-soft transition-smooth border-bege">
@@ -103,10 +133,10 @@ const Home = () => {
         </div>
       </section>
 
-      {/* MÉTODO PREVIEW */}
+      {/* ETAPAS DO PROCESSO */}
       <section className="py-24 bg-bege-claro">
         <div className="container">
-          <SectionHeader eyebrow="O Método Nova Essenvia" title="Quatro fases para uma vida nova" />
+          <SectionHeader eyebrow="Processo Terapêutico" title="7 etapas para a renovação completa" />
           <div className="grid md:grid-cols-4 gap-6 mt-16">
             {phases.map((ph) => (
               <div key={ph.title} className="relative bg-card rounded-2xl p-6 shadow-card hover:-translate-y-1 transition-smooth">
@@ -118,15 +148,15 @@ const Home = () => {
             ))}
           </div>
           <div className="text-center mt-12">
-            <Button asChild variant="deep" size="lg"><Link to="/metodo">Explorar o Método</Link></Button>
+            <Button asChild variant="deep" size="lg"><Link to="/metodo">Ver todas as 7 etapas</Link></Button>
           </div>
         </div>
       </section>
 
-      {/* BENEFICIOS */}
+      {/* BENEFÍCIOS */}
       <section className="py-24">
         <div className="container">
-          <SectionHeader eyebrow="Benefícios" title="O que sua jornada vai construir" />
+          <SectionHeader eyebrow="Benefícios" title="O que a renovação vai construir em você" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
             {benefits.map((b) => (
               <div key={b.label} className="text-center p-6 rounded-xl border border-bege bg-card hover:bg-bege-claro transition-smooth">
@@ -141,7 +171,7 @@ const Home = () => {
       {/* DEPOIMENTOS */}
       <section className="py-24 bg-gradient-soft">
         <div className="container">
-          <SectionHeader eyebrow="Depoimentos" title="Vidas em transformação" />
+          <SectionHeader eyebrow="Depoimentos" title="Histórias de renovação real" />
           <div className="grid md:grid-cols-3 gap-8 mt-16">
             {testimonials.map((t) => (
               <Card key={t.name} className="p-8 bg-card shadow-card border-bege">
@@ -162,9 +192,14 @@ const Home = () => {
       {/* CTA */}
       <section className="py-28 bg-gradient-deep">
         <div className="container text-center max-w-2xl">
-          <h2 className="font-display text-4xl md:text-5xl text-bege-claro mb-6">Sua jornada começa com um passo.</h2>
-          <p className="text-bege/80 mb-10 text-lg whitespace-pre-line">{ctaText}</p>
-          <Button asChild variant="hero" size="lg"><Link to="/entrar">Quero Começar Agora</Link></Button>
+          <p className="text-dourado tracking-[0.3em] uppercase text-xs mb-4">Lema do Método</p>
+          <h2 className="font-display text-4xl md:text-5xl text-bege-claro mb-6">
+            "Não buscamos apenas aliviar dores emocionais."
+          </h2>
+          <p className="text-bege/80 mb-10 text-lg">
+            Buscamos desenvolver pessoas capazes de se renovar continuamente.
+          </p>
+          <Button asChild variant="hero" size="lg"><Link to="/entrar">Quero me Renovar Agora</Link></Button>
         </div>
       </section>
     </>
