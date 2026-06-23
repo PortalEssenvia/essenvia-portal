@@ -15,7 +15,7 @@ import {
 const baseLinks = [
   { to: "/", label: "Início" },
   { to: "/metodo", label: "Método" },
-  { to: "/programas", label: "Os 7 Pilares" },
+  { to: "/metodo#pilares", label: "Os 7 Pilares" },
   { to: "/conteudos", label: "Conteúdos" },
   { to: "/comunidade", label: "Comunidade" },
 ];
@@ -91,6 +91,13 @@ export const Header = () => {
               key={l.to}
               to={l.to}
               end={l.to === "/"}
+              onClick={(e) => {
+                if (l.to.includes("#") && location.pathname === l.to.split("#")[0]) {
+                  e.preventDefault();
+                  const id = l.to.split("#")[1];
+                  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
               className={({ isActive }) =>
                 cn(
                   "text-sm font-medium tracking-wide transition-smooth hover:text-dourado",
@@ -130,7 +137,7 @@ export const Header = () => {
             </DropdownMenu>
           ) : (
             <Button asChild variant="gold" size="lg">
-              <Link to="/entrar">Comece sua Renovação</Link>
+              <Link to="/entrar?intent=signup">Comece sua Renovação</Link>
             </Button>
           )}
         </div>

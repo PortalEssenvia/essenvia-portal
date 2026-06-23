@@ -158,6 +158,7 @@ const Metodo = () => (
     </section>
 
     {/* 7 PILARES */}
+    <div id="pilares" className="scroll-mt-32">
     {pillars.map((p, i) => (
       <section key={p.title} className={`py-20 ${i % 2 === 0 ? "bg-background" : "bg-bege-claro"}`}>
         <div className="container grid lg:grid-cols-2 gap-12 items-center">
@@ -201,6 +202,7 @@ const Metodo = () => (
         </div>
       </section>
     ))}
+    </div>
 
     {/* 7 ETAPAS DO PROCESSO TERAPÊUTICO */}
     <section className="py-24 bg-gradient-deep">
