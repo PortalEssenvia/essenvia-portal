@@ -202,6 +202,7 @@ const Metodo = () => (
         </div>
       </section>
     ))}
+    </div>
 
     {/* 7 ETAPAS DO PROCESSO TERAPÊUTICO */}
     <section className="py-24 bg-gradient-deep">
