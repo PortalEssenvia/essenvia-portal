@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/sections/SectionHeader";
@@ -144,7 +145,25 @@ const plans = [
 
 // ─── COMPONENTE ───────────────────────────────────────────────────────────────
 
-const Metodo = () => (
+const Metodo = () => {
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return;
+    const id = hash.replace("#", "");
+    // Tenta rolar até a âncora; reexecuta se o elemento ainda não montou
+    const tryScroll = (attempt = 0) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (attempt < 10) {
+        setTimeout(() => tryScroll(attempt + 1), 100);
+      }
+    };
+    tryScroll();
+  }, [hash]);
+
+  return (
   <>
     {/* HEADER */}
     <section className="py-20 md:py-28 bg-gradient-soft">
@@ -316,6 +335,7 @@ const Metodo = () => (
       </div>
     </section>
   </>
-);
+  );
+};
 
 export default Metodo;
