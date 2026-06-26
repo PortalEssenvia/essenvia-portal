@@ -151,16 +151,25 @@ const Metodo = () => {
   useEffect(() => {
     if (!hash) return;
     const id = hash.replace("#", "");
-    // Tenta rolar até a âncora; reexecuta se o elemento ainda não montou
-    const tryScroll = (attempt = 0) => {
+    // Tenta rolar até a âncora e mover o foco para o título da seção
+    // (melhora a navegação por teclado e leitores de tela)
+    const tryFocus = (attempt = 0) => {
       const el = document.getElementById(id);
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "start" });
+        const heading =
+          (el.querySelector("[data-section-heading]") as HTMLElement | null) ?? el;
+        // Garante que o elemento seja programaticamente focável sem
+        // alterar a ordem natural de tabulação
+        if (!heading.hasAttribute("tabindex")) {
+          heading.setAttribute("tabindex", "-1");
+        }
+        heading.focus({ preventScroll: true });
       } else if (attempt < 10) {
-        setTimeout(() => tryScroll(attempt + 1), 100);
+        setTimeout(() => tryFocus(attempt + 1), 100);
       }
     };
-    tryScroll();
+    tryFocus();
   }, [hash]);
 
   return (
@@ -177,7 +186,20 @@ const Metodo = () => {
     </section>
 
     {/* 7 PILARES */}
-    <div id="pilares" className="scroll-mt-32">
+    <div
+      id="pilares"
+      tabIndex={-1}
+      aria-labelledby="pilares-heading"
+      className="scroll-mt-32 outline-none focus-visible:ring-2 focus-visible:ring-dourado focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
+    <h2
+      id="pilares-heading"
+      data-section-heading
+      tabIndex={-1}
+      className="sr-only"
+    >
+      Os 7 Pilares do Método Renovação Constante
+    </h2>
     {pillars.map((p, i) => (
       <section key={p.title} className={`py-20 ${i % 2 === 0 ? "bg-background" : "bg-bege-claro"}`}>
         <div className="container grid lg:grid-cols-2 gap-12 items-center">
