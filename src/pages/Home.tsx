@@ -80,7 +80,7 @@ const Home = () => {
   return (
     <>
       {/* ── HERO ───────────────────────────────────────────── */}
-      <section className="relative min-h-[100svh] flex items-center overflow-hidden -mt-[72px] pt-[72px]">
+      <section className="relative min-h-[100svh] flex items-center overflow-hidden -mt-20 md:-mt-24 pt-20 md:pt-24">
         {/* Imagem + overlay */}
         <div className="absolute inset-0">
           <img
