@@ -80,7 +80,7 @@ const Home = () => {
   return (
     <>
       {/* ── HERO ───────────────────────────────────────────── */}
-      <section className="relative min-h-[100svh] flex items-center overflow-hidden -mt-20 md:-mt-24 pt-20 md:pt-24">
+      <section className="relative min-h-[100svh] flex items-center overflow-hidden -mt-[84px] pt-[84px]">
         {/* Imagem + overlay */}
         <div className="absolute inset-0">
           <img
@@ -96,7 +96,7 @@ const Home = () => {
         </div>
 
         {/* Conteúdo */}
-        <div className="container relative z-10 py-24 md:py-32">
+        <div className="container relative z-10 pt-10 pb-24">
           <div className="max-w-2xl">
             {/* Eyebrow */}
             <div className="eyebrow-pill mb-8 animate-fade-in">

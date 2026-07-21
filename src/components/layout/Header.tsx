@@ -77,12 +77,12 @@ export const Header = () => {
             : "bg-bege-claro/90 backdrop-blur-md border-b border-bege"
       )}
     >
-      <div className="container flex items-center justify-between h-[72px]">
+      <div className="container flex items-center justify-between h-[84px]">
 
         {/* ── Logo ── */}
         <Link
           to="/"
-          className="flex items-center gap-3 shrink-0 py-1 group"
+          className="flex items-center gap-4 shrink-0 py-1 group"
           aria-label="Renovação Constante — Início"
         >
           <div className="relative">
@@ -91,7 +91,7 @@ export const Header = () => {
               alt=""
               aria-hidden="true"
               className={cn(
-                "h-11 w-11 object-contain rounded-full transition-smooth",
+                "h-14 w-14 object-contain rounded-full transition-smooth",
                 scrolled || !isOnDarkHero
                   ? "ring-2 ring-dourado/30"
                   : "ring-2 ring-dourado/40 brightness-110"
@@ -101,7 +101,7 @@ export const Header = () => {
           <div className="flex flex-col leading-none">
             <span
               className={cn(
-                "font-display text-[15px] tracking-[0.18em] font-semibold leading-tight transition-smooth",
+                "font-display text-[18px] tracking-[0.18em] font-semibold leading-tight transition-smooth",
                 scrolled || !isOnDarkHero
                   ? "text-verde-profundo"
                   : "text-dourado"
@@ -111,7 +111,7 @@ export const Header = () => {
             </span>
             <span
               className={cn(
-                "font-display text-[15px] tracking-[0.18em] font-semibold leading-tight transition-smooth",
+                "font-display text-[18px] tracking-[0.18em] font-semibold leading-tight transition-smooth",
                 scrolled || !isOnDarkHero
                   ? "text-verde-medio"
                   : "text-bege-claro"

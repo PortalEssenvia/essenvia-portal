@@ -63,7 +63,7 @@ export default {
         "3xl": "calc(var(--radius) + 16px)",
       },
       spacing: {
-        "header": "72px",
+        "header": "84px",
       },
       boxShadow: {
         soft:  "var(--shadow-soft)",
