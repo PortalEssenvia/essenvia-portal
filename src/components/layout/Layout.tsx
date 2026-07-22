@@ -3,6 +3,9 @@ import { useEffect } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { WhatsAppFloat } from "./WhatsAppFloat";
+import { UrgencyBar } from "./UrgencyBar";
+import { ReadingProgress } from "./ReadingProgress";
+import { BackToTop } from "./BackToTop";
 
 export const Layout = () => {
   const { pathname } = useLocation();
@@ -15,12 +18,20 @@ export const Layout = () => {
       >
         Pular para o conteúdo principal
       </a>
+      <UrgencyBar />
       <Header />
-      <main id="main-content" className="flex-1 pt-20 md:pt-24" tabIndex={-1}>
+      <ReadingProgress />
+      <main
+        id="main-content"
+        className="flex-1 pt-20 md:pt-24"
+        style={{ marginTop: "var(--urgency-h, 0px)" }}
+        tabIndex={-1}
+      >
         <Outlet />
       </main>
       <Footer />
       <WhatsAppFloat />
+      <BackToTop />
     </div>
   );
 };
