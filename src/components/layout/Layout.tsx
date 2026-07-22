@@ -9,8 +9,14 @@ export const Layout = () => {
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return (
     <div className="min-h-screen flex flex-col">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-md focus:bg-dourado focus:text-verde-profundo focus:font-semibold"
+      >
+        Pular para o conteúdo principal
+      </a>
       <Header />
-      <main className="flex-1 pt-20 md:pt-24">
+      <main id="main-content" className="flex-1 pt-20 md:pt-24" tabIndex={-1}>
         <Outlet />
       </main>
       <Footer />

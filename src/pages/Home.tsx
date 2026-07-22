@@ -80,7 +80,10 @@ const Home = () => {
   return (
     <>
       {/* ── HERO ───────────────────────────────────────────── */}
-      <section className="relative min-h-[100svh] flex items-center overflow-hidden -mt-[84px] pt-[84px]">
+      <section
+        aria-labelledby="hero-title"
+        className="relative min-h-[100svh] flex items-center overflow-hidden -mt-[84px] pt-[84px]"
+      >
         {/* Imagem + overlay */}
         <div className="absolute inset-0">
           <img
@@ -104,7 +107,7 @@ const Home = () => {
             </div>
 
             {/* H1 */}
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl xl:text-7xl text-white leading-[1.08] mb-6 animate-slide-up">
+            <h1 id="hero-title" className="font-display text-4xl sm:text-5xl md:text-6xl xl:text-7xl text-white leading-[1.08] mb-6 animate-slide-up">
               Renove suas{" "}
               <span className="text-gradient-gold">emoções</span>.{" "}
               <br className="hidden sm:block" />
@@ -172,7 +175,7 @@ const Home = () => {
       </section>
 
       {/* ── FRASES ─────────────────────────────────────────── */}
-      <section className="bg-verde-profundo py-20">
+      <section aria-label="Frases do método" className="bg-verde-profundo py-20">
         <div className="container">
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {phrases.map((p, i) => (
@@ -188,7 +191,7 @@ const Home = () => {
       </section>
 
       {/* ── 3 PILARES ─────────────────────────────────────── */}
-      <section className="py-24 bg-gradient-soft">
+      <section aria-label="Pilares do método" className="py-24 bg-gradient-soft">
         <div className="container">
           <SectionHeader
             eyebrow="O Método RC"
@@ -213,7 +216,7 @@ const Home = () => {
       </section>
 
       {/* ── ETAPAS ────────────────────────────────────────── */}
-      <section className="py-24 bg-white">
+      <section aria-label="Etapas do processo" className="py-24 bg-white">
         <div className="container">
           <SectionHeader
             eyebrow="Processo Terapêutico"
@@ -245,7 +248,7 @@ const Home = () => {
       </section>
 
       {/* ── BENEFÍCIOS ────────────────────────────────────── */}
-      <section className="py-24 bg-gradient-soft">
+      <section aria-label="Benefícios" className="py-24 bg-gradient-soft">
         <div className="container">
           <SectionHeader
             eyebrow="Benefícios"
@@ -268,7 +271,7 @@ const Home = () => {
       </section>
 
       {/* ── DEPOIMENTOS ───────────────────────────────────── */}
-      <section className="py-24 bg-verde-profundo">
+      <section aria-label="Depoimentos" className="py-24 bg-verde-profundo">
         <div className="container">
           <SectionHeader
             eyebrow="Histórias reais"
@@ -308,7 +311,7 @@ const Home = () => {
       </section>
 
       {/* ── CTA FINAL ─────────────────────────────────────── */}
-      <section className="relative py-32 bg-gradient-deep overflow-hidden">
+      <section aria-label="Chamada final" className="relative py-32 bg-gradient-deep overflow-hidden">
         {/* Decorativo */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-dourado blur-3xl" />
