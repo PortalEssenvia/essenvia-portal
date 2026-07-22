@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, User, ChevronDown } from "lucide-react";
+import {
+  Menu, X, LogOut, ChevronDown,
+  Heart, Brain, Compass, Moon, Activity, Zap, Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,9 +23,20 @@ const baseLinks = [
   { to: "/comunidade", label: "Comunidade" },
 ];
 
+const pilaresMenu = [
+  { icon: Heart,    title: "Renovação Emocional",  desc: "Reprocessar cargas com a TRG." },
+  { icon: Brain,    title: "Renovação Sistêmica",  desc: "Padrões familiares e vínculos." },
+  { icon: Sparkles, title: "Renovação Mental",     desc: "Clareza, foco e crenças." },
+  { icon: Activity, title: "Renovação do Corpo",   desc: "Movimento e vitalidade." },
+  { icon: Moon,     title: "Renovação do Sono",    desc: "Descanso profundo e reparador." },
+  { icon: Zap,      title: "Renovação Energética", desc: "Fluxo, presença e equilíbrio." },
+  { icon: Compass,  title: "Renovação de Propósito", desc: "Direção e sentido de vida." },
+];
+
 export const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [pilaresOpen, setPilaresOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -68,8 +82,9 @@ export const Header = () => {
 
   return (
     <header
+      style={{ top: "var(--urgency-h, 0px)" }}
       className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-all duration-400",
+        "fixed inset-x-0 z-50 transition-all duration-400",
         scrolled
           ? "glass-light shadow-soft"
           : isOnDarkHero
@@ -124,8 +139,59 @@ export const Header = () => {
 
         {/* ── Nav desktop ── */}
         <nav className="hidden lg:flex items-center gap-1" aria-label="Principal">
-          {links.map((l) => (
-            <NavLink
+          {links.map((l) => {
+            const isPilares = l.to === "/programas";
+            if (isPilares) {
+              return (
+                <div
+                  key={l.to}
+                  className="relative"
+                  onMouseEnter={() => setPilaresOpen(true)}
+                  onMouseLeave={() => setPilaresOpen(false)}
+                >
+                  <NavLink
+                    to={l.to}
+                    className={({ isActive }) =>
+                      cn(
+                        "relative flex items-center gap-1 px-4 py-2 rounded-lg text-[13px] font-medium tracking-wide transition-smooth",
+                        "hover:bg-dourado/10 hover:text-dourado",
+                        isActive
+                          ? "text-dourado"
+                          : scrolled || !isOnDarkHero
+                            ? "text-verde-profundo"
+                            : "text-bege-claro/90"
+                      )
+                    }
+                  >
+                    {l.label}
+                    <ChevronDown className="w-3 h-3 opacity-70" />
+                  </NavLink>
+                  {pilaresOpen && (
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 w-[560px] animate-fade-in">
+                      <div className="bg-card border border-bege rounded-2xl shadow-soft p-5 grid grid-cols-2 gap-2">
+                        {pilaresMenu.map((p) => (
+                          <Link
+                            key={p.title}
+                            to="/metodo#pilares"
+                            className="flex items-start gap-3 p-3 rounded-xl hover:bg-bege-claro transition-smooth group"
+                          >
+                            <div className="w-9 h-9 rounded-lg bg-gradient-gold flex items-center justify-center shrink-0 shadow-gold group-hover:scale-105 transition-smooth">
+                              <p.icon className="w-4 h-4 text-verde-profundo" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-verde-profundo text-[13px] leading-tight">{p.title}</p>
+                              <p className="text-muted-foreground text-xs mt-0.5 leading-snug">{p.desc}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            return (
+              <NavLink
               key={l.to}
               to={l.to}
               end={l.to === "/"}
@@ -142,8 +208,9 @@ export const Header = () => {
               }
             >
               {l.label}
-            </NavLink>
-          ))}
+              </NavLink>
+            );
+          })}
         </nav>
 
         {/* ── Ações desktop ── */}

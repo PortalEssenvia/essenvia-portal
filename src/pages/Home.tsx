@@ -1,13 +1,18 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SectionHeader } from "@/components/sections/SectionHeader";
 import {
   ChevronDown, Heart, Brain, Zap, Moon, Compass, Activity,
   Sparkles, Star, Target, Award, TrendingUp, ShieldCheck,
-  RefreshCw, ArrowRight,
+  RefreshCw, ArrowRight, Play,
 } from "lucide-react";
 import heroImg from "@/assets/hero-path.jpg";
+import { StatsBar } from "@/components/StatsBar";
+import { VideoModal } from "@/components/VideoModal";
+
+const HERO_VIDEO_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
 const phrases = [
   "Renove suas emoções. Renove sua história. Renove sua vida.",
@@ -77,6 +82,7 @@ const testimonials = [
 ];
 
 const Home = () => {
+  const [videoOpen, setVideoOpen] = useState(false);
   return (
     <>
       {/* ── HERO ───────────────────────────────────────────── */}
@@ -122,7 +128,7 @@ const Home = () => {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap gap-4 animate-slide-up delay-200">
+            <div className="flex flex-wrap items-center gap-4 animate-slide-up delay-200">
               <Button
                 asChild
                 variant="gold"
@@ -142,6 +148,16 @@ const Home = () => {
               >
                 <Link to="/metodo">Conheça o Método</Link>
               </Button>
+              <button
+                onClick={() => setVideoOpen(true)}
+                aria-label="Assista ao vídeo de apresentação em 2 minutos"
+                className="group flex items-center gap-3 text-white"
+              >
+                <span className="relative flex items-center justify-center w-12 h-12 rounded-full bg-white/10 border-2 border-dourado animate-pulse-gold group-hover:bg-dourado/20 transition-smooth">
+                  <Play className="w-5 h-5 fill-dourado text-dourado ml-0.5" />
+                </span>
+                <span className="text-sm font-medium">Assista em 2 min</span>
+              </button>
             </div>
 
             {/* Prova social rápida */}
@@ -173,6 +189,8 @@ const Home = () => {
           <ChevronDown className="w-5 h-5" />
         </div>
       </section>
+
+      <StatsBar />
 
       {/* ── FRASES ─────────────────────────────────────────── */}
       <section aria-label="Frases do método" className="bg-verde-profundo py-20">
@@ -339,6 +357,7 @@ const Home = () => {
           </Button>
         </div>
       </section>
+      <VideoModal open={videoOpen} onOpenChange={setVideoOpen} url={HERO_VIDEO_URL} title="Apresentação do Método Renovação Constante" />
     </>
   );
 };
