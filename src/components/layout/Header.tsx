@@ -123,7 +123,7 @@ export const Header = () => {
         </Link>
 
         {/* ── Nav desktop ── */}
-        <nav className="hidden lg:flex items-center gap-1" role="navigation">
+        <nav className="hidden lg:flex items-center gap-1" aria-label="Principal">
           {links.map((l) => (
             <NavLink
               key={l.to}
@@ -209,7 +209,7 @@ export const Header = () => {
       {/* ── Menu mobile ── */}
       {open && (
         <div className="lg:hidden bg-bege-claro/97 backdrop-blur-md border-t border-bege animate-slide-down">
-          <nav className="container flex flex-col py-5 gap-1" role="navigation">
+          <nav className="container flex flex-col py-5 gap-1" aria-label="Mobile">
             {links.map((l) => (
               <NavLink
                 key={l.to}
