@@ -1,8 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SectionHeader } from "@/components/sections/SectionHeader";
-import { Flame } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +11,8 @@ import type { PracticeId } from "@/features/tools/types";
 import { PracticeCard } from "@/features/tools/components/PracticeCard";
 import { RoutineBuilder } from "@/features/tools/components/RoutineBuilder";
 import { HistoryView } from "@/features/tools/components/HistoryView";
+import { StreakBadge, AchievementsCard, tierFor } from "@/features/tools/components/StreakBadge";
+import { celebrateMilestone, celebratePractice } from "@/features/tools/utils/celebrate";
 
 import { PrayerPractice } from "@/features/tools/practices/PrayerPractice";
 import { AffirmationsPractice } from "@/features/tools/practices/AffirmationsPractice";
@@ -42,9 +43,13 @@ const Ferramentas = () => {
     const meta = PRACTICES.find((p) => p.id === id)!;
     if (!wasDone) {
       toast.success(`${meta.icon} ${meta.label} concluída!`);
+      celebratePractice();
       const newCount = done.length + 1;
       if (newCount === PRACTICE_IDS.length) {
-        setTimeout(() => toast.success("🌟 Você completou todas as práticas hoje!", { duration: 5000 }), 400);
+        setTimeout(() => {
+          toast.success("🌟 Você completou TODAS as práticas hoje!", { duration: 6000 });
+          celebrateMilestone();
+        }, 400);
       }
     }
   };
@@ -54,11 +59,30 @@ const Ferramentas = () => {
     mark(id);
     const meta = PRACTICES.find((p) => p.id === id)!;
     toast.success(`${meta.icon} ${meta.label} concluída!`);
+    celebratePractice();
     const newCount = done.length + 1;
     if (newCount === PRACTICE_IDS.length) {
-      setTimeout(() => toast.success("🌟 Você completou todas as práticas hoje!", { duration: 5000 }), 400);
+      setTimeout(() => {
+        toast.success("🌟 Você completou TODAS as práticas hoje!", { duration: 6000 });
+        celebrateMilestone();
+      }, 400);
     }
   };
+
+  // Celebrate when streak crosses into a new tier
+  const prevTierMin = useRef<number | null>(null);
+  useEffect(() => {
+    const current = tierFor(streak).min;
+    if (prevTierMin.current === null) {
+      prevTierMin.current = current;
+      return;
+    }
+    if (current > prevTierMin.current && current > 0) {
+      celebrateMilestone();
+      toast.success(`🏆 Nova conquista: ${tierFor(streak).label} (${streak} dias)!`, { duration: 6000 });
+    }
+    prevTierMin.current = current;
+  }, [streak]);
 
   const progress = (done.length / PRACTICE_IDS.length) * 100;
 
@@ -142,10 +166,7 @@ const Ferramentas = () => {
                         <h3 className="font-display text-2xl text-verde-profundo">Práticas de Hoje</h3>
                         <p className="text-sm text-muted-foreground">{done.length} de {PRACTICE_IDS.length} práticas concluídas</p>
                       </div>
-                      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-dourado/15 text-verde-profundo">
-                        <Flame className="w-4 h-4 text-dourado" />
-                        <span className="font-semibold text-sm">{streak} {streak === 1 ? "dia" : "dias"} seguidos</span>
-                      </div>
+                      <StreakBadge streak={streak} />
                     </div>
 
                     <div className="h-3 bg-bege rounded-full overflow-hidden mb-8">
@@ -191,6 +212,10 @@ const Ferramentas = () => {
                         </div>
                       ))}
                     </div>
+                  </Card>
+
+                  <Card className="p-6 bg-card shadow-soft border-bege">
+                    <AchievementsCard streak={streak} />
                   </Card>
 
                   <Card className="p-6 bg-card shadow-soft border-bege">
