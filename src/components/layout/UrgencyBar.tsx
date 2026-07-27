@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, Flame } from "lucide-react";
+import { track } from "@/lib/track";
 
 const KEY = "urgency-bar-dismissed";
 
@@ -25,6 +26,7 @@ export const UrgencyBar = () => {
   const close = () => {
     sessionStorage.setItem(KEY, "1");
     setVisible(false);
+    void track("urgency_bar_close", {});
   };
 
   if (!visible) return null;
@@ -45,6 +47,7 @@ export const UrgencyBar = () => {
         <div className="flex items-center gap-1 shrink-0">
           <Link
             to="/entrar"
+            onClick={() => void track("urgency_bar_click", { target: "entrar" })}
             className="hidden sm:inline-flex items-center rounded-full bg-verde-profundo text-bege-claro px-3 py-1 text-xs font-semibold hover:bg-verde-medio transition-smooth"
           >
             Garantir vaga

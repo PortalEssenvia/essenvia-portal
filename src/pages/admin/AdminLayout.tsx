@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Link, useNavigate } from "react-router-dom";
-import { LayoutDashboard, FileText, Video, MessageSquareQuote, FileEdit, ArrowLeft, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, Video, MessageSquareQuote, FileEdit, ArrowLeft, LogOut, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ const items = [
   { to: "/admin/blog", label: "Blog", icon: FileText },
   { to: "/admin/videos", label: "Vídeos", icon: Video },
   { to: "/admin/depoimentos", label: "Depoimentos", icon: MessageSquareQuote },
+  { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
 export default function AdminLayout() {
