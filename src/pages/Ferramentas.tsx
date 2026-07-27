@@ -13,6 +13,8 @@ import { RoutineBuilder } from "@/features/tools/components/RoutineBuilder";
 import { HistoryView } from "@/features/tools/components/HistoryView";
 import { StreakBadge, AchievementsCard, tierFor } from "@/features/tools/components/StreakBadge";
 import { celebrateMilestone, celebratePractice } from "@/features/tools/utils/celebrate";
+import { NotificationsCard } from "@/components/NotificationsCard";
+import { refreshReminders, initReminders } from "@/lib/notifications";
 
 import { PrayerPractice } from "@/features/tools/practices/PrayerPractice";
 import { AffirmationsPractice } from "@/features/tools/practices/AffirmationsPractice";
@@ -29,6 +31,10 @@ const Ferramentas = () => {
   const streak = useStreak();
   const history = useDailyHistory(35);
   const [open, setOpen] = useState<PracticeId | null>(null);
+
+  // Mantém os lembretes locais sincronizados com a configuração das práticas.
+  useEffect(() => { initReminders(); }, []);
+  useEffect(() => { void refreshReminders(); }, [cfg]);
 
   /**
    * FIX 01 — Usa `new Date()` apenas para calcular o calendário/semana,
@@ -217,6 +223,8 @@ const Ferramentas = () => {
                   <Card className="p-6 bg-card shadow-soft border-bege">
                     <AchievementsCard streak={streak} />
                   </Card>
+
+                  <NotificationsCard />
 
                   <Card className="p-6 bg-card shadow-soft border-bege">
                     <h3 className="font-display text-lg text-verde-profundo capitalize mb-4">
