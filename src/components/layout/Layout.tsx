@@ -6,10 +6,13 @@ import { WhatsAppFloat } from "./WhatsAppFloat";
 import { UrgencyBar } from "./UrgencyBar";
 import { ReadingProgress } from "./ReadingProgress";
 import { BackToTop } from "./BackToTop";
+import { ExitIntentPopup } from "@/components/newsletter/ExitIntentPopup";
+import { track } from "@/lib/track";
 
 export const Layout = () => {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => { void track("page_view", { path: pathname }); }, [pathname]);
   return (
     <div className="min-h-screen flex flex-col">
       <a
@@ -32,6 +35,7 @@ export const Layout = () => {
       <Footer />
       <WhatsAppFloat />
       <BackToTop />
+      <ExitIntentPopup />
     </div>
   );
 };
