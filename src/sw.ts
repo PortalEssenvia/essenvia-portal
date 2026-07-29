@@ -1,0 +1,102 @@
+/// <reference lib="webworker" />
+/// <reference types="vite-plugin-pwa/client" />
+
+import { cleanupOutdatedCaches, precacheAndRoute } from "workbox-precaching";
+import { clientsClaim } from "workbox-core";
+import { NavigationRoute, registerRoute } from "workbox-routing";
+import { NetworkFirst, CacheFirst } from "workbox-strategies";
+import { ExpirationPlugin } from "workbox-expiration";
+
+// Firebase Messaging no SW
+import { initializeApp } from "firebase/app";
+import { getMessaging, onBackgroundMessage } from "firebase/messaging/sw";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCo0GBIkkYnZPKcx4NQU5m1gdQ3ja03NNI",
+  authDomain: "constante-renovacao.firebaseapp.com",
+  projectId: "constante-renovacao",
+  storageBucket: "constante-renovacao.firebasestorage.app",
+  messagingSenderId: "81351640314",
+  appId: "1:81351640314:web:77d9f5533f2ddd23fd7543",
+  measurementId: "G-FN4XM8C1K4",
+};
+
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
+
+onBackgroundMessage(messaging, (payload) => {
+  const title = payload.notification?.title || "Nova Essenvia";
+  const body = payload.notification?.body || "Hora da sua prática diária ✨";
+  const icon = "/logo.png";
+  const badge = "/logo.png";
+  const tag = payload.data?.tag || "practice-reminder";
+
+  self.registration.showNotification(title, {
+    body,
+    icon,
+    badge,
+    tag,
+    data: payload.data,
+    requireInteraction: false,
+  });
+});
+
+// Workbox PWA default behavior
+declare const self: ServiceWorkerGlobalScope & {
+  __WB_MANIFEST: Array<{ url: string; revision: string | null }>;
+};
+
+self.skipWaiting();
+clientsClaim();
+
+// Precache build output
+try {
+  precacheAndRoute(self.__WB_MANIFEST);
+} catch {
+  // fallback caso __WB_MANIFEST não esteja disponível em dev
+}
+
+cleanupOutdatedCaches();
+
+// Navigation: NetworkFirst, exceto rotas de OAuth/API
+registerRoute(
+  ({ request, url }: { request: Request; url: URL }) =>
+    request.mode === "navigate" && !url.pathname.startsWith("/~oauth") && !url.pathname.startsWith("/api/"),
+  new NetworkFirst({
+    cacheName: "html-nav",
+    networkTimeoutSeconds: 3,
+    plugins: [
+      new ExpirationPlugin({ maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 }),
+    ],
+  })
+);
+
+// Assets estáticos: CacheFirst
+registerRoute(
+  ({ request, sameOrigin }: { request: Request; sameOrigin: boolean }) =>
+    sameOrigin && ["style", "script", "worker", "font", "image"].includes(request.destination),
+  new CacheFirst({
+    cacheName: "assets",
+    plugins: [
+      new ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 }),
+    ],
+  })
+);
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const urlToOpen = event.notification.data?.url || "/ferramentas";
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        for (const client of clientList) {
+          if (client.url.includes(self.location.origin) && "focus" in client) {
+            client.navigate(urlToOpen);
+            return client.focus();
+          }
+        }
+        return self.clients.openWindow(urlToOpen);
+      })
+  );
+});
