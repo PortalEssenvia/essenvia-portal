@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
                 url: "/ferramentas",
                 tag: `practice-${p.practice_key}`,
               },
-              android: { notification { channel_id: "practices" } },
+              android: { notification: { channel_id: "practices" } },
               apns: {
                 payload: {
                   aps: { sound: "default", badge: 1 },
