@@ -19,7 +19,9 @@ export default defineConfig(({ mode }) => ({
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: null,
-      filename: "sw.js",
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       devOptions: { enabled: false },
       includeAssets: ["favicon.ico", "logo.png", "logo-bg.png"],
       manifest: {
