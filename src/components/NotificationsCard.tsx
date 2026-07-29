@@ -9,31 +9,59 @@ import {
   notificationsEnabled,
   notificationsSupported,
 } from "@/lib/notifications";
+import { requestFcmToken, isFirebaseSupported, onForegroundMessage } from "@/lib/firebase";
 
 export const NotificationsCard = () => {
   const [supported, setSupported] = useState(true);
   const [enabled, setEnabled] = useState(false);
   const [perm, setPerm] = useState<NotificationPermission>("default");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setSupported(notificationsSupported());
+    setSupported(notificationsSupported() && isFirebaseSupported());
     if (notificationsSupported()) {
       setPerm(Notification.permission);
       setEnabled(notificationsEnabled() && Notification.permission === "granted");
     }
+
+    // Escuta mensagens em foreground vindas do FCM
+    const unsubscribe = onForegroundMessage((payload) => {
+      toast.info(payload.notification?.title || "Nova Essenvia", {
+        description: payload.notification?.body,
+        duration: 6000,
+      });
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   if (!supported) return null;
 
   const handleEnable = async () => {
-    const p = await enableNotifications();
-    setPerm(p);
-    if (p === "granted") {
-      setEnabled(true);
-      toast.success("Lembretes ativados! Você receberá avisos nos horários das suas práticas.");
-      new Notification("Nova Essenvia", { body: "Notificações ativadas ✨", icon: "/logo.png" });
-    } else if (p === "denied") {
-      toast.error("Permissão negada. Ative nas configurações do navegador.");
+    setLoading(true);
+    try {
+      const p = await enableNotifications();
+      setPerm(p);
+      if (p === "granted") {
+        const token = await requestFcmToken();
+        setEnabled(true);
+        if (token) {
+          toast.success("Lembretes ativados! Você receberá avisos mesmo com o app fechado.");
+        } else {
+          toast.success("Lembretes locais ativados.");
+        }
+        try {
+          new Notification("Nova Essenvia", { body: "Notificações ativadas ✨", icon: "/logo.png" });
+        } catch {
+          /* ignore */
+        }
+      } else if (p === "denied") {
+        toast.error("Permissão negada. Ative nas configurações do navegador.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,8 +84,7 @@ export const NotificationsCard = () => {
         <div>
           <h3 className="font-display text-base text-verde-profundo">Lembretes das práticas</h3>
           <p className="text-xs text-muted-foreground mt-1">
-            Receba um aviso no horário configurado de cada prática. Instale o app na tela inicial
-            para lembretes mesmo com o navegador fechado.
+            Receba um aviso no horário configurado de cada prática, mesmo quando o app não estiver aberto.
           </p>
         </div>
       </div>
@@ -68,9 +95,15 @@ export const NotificationsCard = () => {
           Desativar lembretes
         </Button>
       ) : (
-        <Button variant="deep" size="sm" className="w-full" onClick={handleEnable} disabled={perm === "denied"}>
+        <Button
+          variant="deep"
+          size="sm"
+          className="w-full"
+          onClick={handleEnable}
+          disabled={perm === "denied" || loading}
+        >
           <Bell className="w-4 h-4 mr-2" />
-          {perm === "denied" ? "Bloqueado no navegador" : "Ativar lembretes"}
+          {perm === "denied" ? "Bloqueado no navegador" : loading ? "Ativando..." : "Ativar lembretes push"}
         </Button>
       )}
     </Card>

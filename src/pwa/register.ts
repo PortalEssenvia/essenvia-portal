@@ -41,5 +41,15 @@ export function initPWA() {
     void unregisterAppWorkers();
     return;
   }
-  registerSW({ immediate: true });
+  registerSW({
+    immediate: true,
+    onRegistered(r) {
+      if (r) {
+        console.log("[pwa] service worker registrado:", r.scope);
+      }
+    },
+    onRegisterError(err) {
+      console.error("[pwa] erro ao registrar service worker:", err);
+    },
+  });
 }
