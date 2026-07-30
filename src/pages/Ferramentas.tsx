@@ -11,6 +11,7 @@ import type { PracticeId } from "@/features/tools/types";
 import { PracticeCard } from "@/features/tools/components/PracticeCard";
 import { RoutineBuilder } from "@/features/tools/components/RoutineBuilder";
 import { HistoryView } from "@/features/tools/components/HistoryView";
+import { ReminderSettings } from "@/features/tools/components/ReminderSettings";
 import { StreakBadge, AchievementsCard, tierFor } from "@/features/tools/components/StreakBadge";
 import { celebrateMilestone, celebratePractice } from "@/features/tools/utils/celebrate";
 import { NotificationsCard } from "@/components/NotificationsCard";
@@ -160,6 +161,7 @@ const Ferramentas = () => {
               <TabsTrigger value="praticas">🌿 Práticas</TabsTrigger>
               <TabsTrigger value="rotina">📅 Minha Rotina</TabsTrigger>
               <TabsTrigger value="historico">📈 Histórico</TabsTrigger>
+              <TabsTrigger value="lembretes">🔔 Lembretes</TabsTrigger>
             </TabsList>
 
             <TabsContent value="praticas" className="space-y-8">
@@ -279,6 +281,16 @@ const Ferramentas = () => {
             <TabsContent value="historico">
               <Card className="p-6 md:p-8 bg-card shadow-soft border-bege">
                 <HistoryView />
+              </Card>
+            </TabsContent>
+
+            {/* Ativar/desativar lembretes por prática e definir horários */}
+            <TabsContent value="lembretes">
+              <Card className="p-6 md:p-8 bg-card shadow-soft border-bege space-y-6">
+                <ReminderSettings />
+                <div className="max-w-md">
+                  <NotificationsCard />
+                </div>
               </Card>
             </TabsContent>
           </Tabs>
