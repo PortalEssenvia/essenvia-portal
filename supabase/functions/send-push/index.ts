@@ -35,13 +35,13 @@ function saToken(saJson: string) {
     .importKey(
       "pkcs8",
       keyData.buffer,
-      { name: "RSA-PSS", hash: "SHA-256" },
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
       false,
       ["sign"]
     )
     .then((key) => {
       const encoder = new TextEncoder();
-      return crypto.subtle.sign({ name: "RSA-PSS", saltLength: 32 }, key, encoder.encode(jwt));
+      return crypto.subtle.sign({ name: "RSASSA-PKCS1-v1_5" }, key, encoder.encode(jwt));
     })
     .then((sig) => {
       const signature = btoa(String.fromCharCode(...new Uint8Array(sig)))
