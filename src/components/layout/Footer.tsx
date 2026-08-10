@@ -29,11 +29,11 @@ export const Footer = () => (
           <img
             src="/logo.png"
             alt="Renovação Constante"
-            className="h-12 w-12 object-contain rounded-full ring-1 ring-dourado/30 group-hover:ring-dourado/60 transition-smooth"
+            className="h-14 w-14 object-contain rounded-full ring-1 ring-dourado/30 group-hover:ring-dourado/60 transition-smooth shrink-0"
           />
-          <div className="leading-none">
-            <p className="font-display text-base tracking-[0.15em] text-dourado font-semibold">RENOVAÇÃO</p>
-            <p className="font-display text-base tracking-[0.15em] text-bege-claro/80 font-semibold">CONSTANTE</p>
+          <div className="leading-none pt-[2px]">
+            <p className="font-display text-[17px] tracking-[0.16em] leading-[1.1] text-dourado font-semibold">RENOVAÇÃO</p>
+            <p className="font-display text-[13px] tracking-[0.42em] leading-[1.4] text-bege-claro/80 font-medium">CONSTANTE</p>
           </div>
         </Link>
 

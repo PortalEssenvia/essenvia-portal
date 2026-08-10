@@ -97,26 +97,26 @@ export const Header = () => {
         {/* ── Logo ── */}
         <Link
           to="/"
-          className="flex items-center gap-4 shrink-0 py-1 group"
+          className="flex items-center gap-3 shrink-0 py-1 group"
           aria-label="Renovação Constante — Início"
         >
-          <div className="relative">
+          <div className="relative shrink-0">
             <img
               src="/logo.png"
               alt=""
               aria-hidden="true"
               className={cn(
-                "h-14 w-14 object-contain rounded-full transition-smooth",
+                "h-16 w-16 object-contain rounded-full transition-smooth group-hover:scale-[1.03]",
                 scrolled || !isOnDarkHero
                   ? "ring-2 ring-dourado/30"
                   : "ring-2 ring-dourado/40 brightness-110"
               )}
             />
           </div>
-          <div className="flex flex-col leading-none">
+          <div className="flex flex-col leading-none pt-[2px]">
             <span
               className={cn(
-                "font-display text-[18px] tracking-[0.18em] font-semibold leading-tight transition-smooth",
+                "font-display text-[17px] md:text-[19px] tracking-[0.16em] font-semibold leading-[1.1] transition-smooth",
                 scrolled || !isOnDarkHero
                   ? "text-verde-profundo"
                   : "text-dourado"
@@ -126,7 +126,7 @@ export const Header = () => {
             </span>
             <span
               className={cn(
-                "font-display text-[18px] tracking-[0.18em] font-semibold leading-tight transition-smooth",
+                "font-display text-[13px] md:text-[14px] tracking-[0.42em] font-medium leading-[1.4] transition-smooth",
                 scrolled || !isOnDarkHero
                   ? "text-verde-medio"
                   : "text-bege-claro"
