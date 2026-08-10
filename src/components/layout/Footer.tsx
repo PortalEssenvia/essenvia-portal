@@ -29,7 +29,7 @@ export const Footer = () => (
           <img
             src="/logo.png"
             alt="Renovação Constante"
-            className="h-14 w-14 object-contain rounded-full ring-1 ring-dourado/30 group-hover:ring-dourado/60 transition-smooth shrink-0"
+            className="h-18 w-18 md:h-22 md:w-22 object-contain rounded-full transition-smooth shrink-0"
           />
           <div className="leading-none pt-[2px]">
             <p className="font-display text-[17px] tracking-[0.16em] leading-[1.1] text-dourado font-semibold">RENOVAÇÃO</p>
