@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/assets\//, /\.[a-z0-9]+$/i],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
@@ -59,10 +59,10 @@ export default defineConfig(({ mode }) => ({
           },
           {
             urlPattern: ({ request, sameOrigin }) =>
-              sameOrigin && ["style", "script", "worker", "font", "image"].includes(request.destination),
+              sameOrigin && ["font", "image"].includes(request.destination),
             handler: "CacheFirst",
             options: {
-              cacheName: "assets",
+              cacheName: "assets-media",
               expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
             },
           },

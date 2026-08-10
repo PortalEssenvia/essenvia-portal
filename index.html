@@ -23,6 +23,41 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      // Auto-recuperação: se um módulo falhar ao carregar (cache antigo do service
+      // worker devolvendo HTML no lugar de JS), limpa caches/SW e recarrega uma vez.
+      (function () {
+        var KEY = "sw-recovery-attempt";
+        function recover() {
+          if (sessionStorage.getItem(KEY)) return;
+          sessionStorage.setItem(KEY, "1");
+          var done = function () { location.reload(); };
+          var jobs = [];
+          if ("serviceWorker" in navigator) {
+            jobs.push(
+              navigator.serviceWorker.getRegistrations().then(function (rs) {
+                return Promise.all(rs.map(function (r) { return r.unregister(); }));
+              }).catch(function () {})
+            );
+          }
+          if (window.caches) {
+            jobs.push(
+              caches.keys().then(function (ks) {
+                return Promise.all(ks.map(function (k) { return caches.delete(k); }));
+              }).catch(function () {})
+            );
+          }
+          Promise.all(jobs).then(done, done);
+        }
+        window.addEventListener("error", function (e) {
+          var t = e.target;
+          if (t && (t.tagName === "SCRIPT" || t.tagName === "LINK")) recover();
+        }, true);
+        window.addEventListener("load", function () {
+          setTimeout(function () { sessionStorage.removeItem(KEY); }, 5000);
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

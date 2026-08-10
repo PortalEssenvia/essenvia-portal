@@ -71,12 +71,26 @@ registerRoute(
   })
 );
 
-// Assets estáticos: CacheFirst
+// Scripts/estilos: sempre revalidar na rede (evita servir bundles antigos
+// que já não existem no servidor e quebram o carregamento do app).
 registerRoute(
   ({ request, sameOrigin }: { request: Request; sameOrigin: boolean }) =>
-    sameOrigin && ["style", "script", "worker", "font", "image"].includes(request.destination),
+    sameOrigin && ["style", "script", "worker"].includes(request.destination),
+  new NetworkFirst({
+    cacheName: "assets-code",
+    networkTimeoutSeconds: 5,
+    plugins: [
+      new ExpirationPlugin({ maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 7 }),
+    ],
+  })
+);
+
+// Fontes e imagens: CacheFirst (conteúdo imutável)
+registerRoute(
+  ({ request, sameOrigin }: { request: Request; sameOrigin: boolean }) =>
+    sameOrigin && ["font", "image"].includes(request.destination),
   new CacheFirst({
-    cacheName: "assets",
+    cacheName: "assets-media",
     plugins: [
       new ExpirationPlugin({ maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 }),
     ],
