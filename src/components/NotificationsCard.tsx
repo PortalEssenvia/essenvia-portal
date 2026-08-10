@@ -22,6 +22,17 @@ export const NotificationsCard = () => {
     if (notificationsSupported()) {
       setPerm(Notification.permission);
       setEnabled(notificationsEnabled() && Notification.permission === "granted");
+      // Pede a permissão automaticamente na primeira visita à aba
+      if (Notification.permission === "default") {
+        void Notification.requestPermission().then((p) => setPerm(p));
+      }
+      // Mantém o status sincronizado se o usuário mudar no navegador
+      navigator.permissions
+        ?.query({ name: "notifications" as PermissionName })
+        .then((status) => {
+          status.onchange = () => setPerm(Notification.permission);
+        })
+        .catch(() => {});
     }
 
     // Escuta mensagens em foreground vindas do FCM
@@ -38,6 +49,13 @@ export const NotificationsCard = () => {
   }, []);
 
   if (!supported) return null;
+
+  const statusMeta =
+    perm === "granted"
+      ? { label: "Permitido", cls: "bg-emerald-100 text-emerald-800 border-emerald-200" }
+      : perm === "denied"
+        ? { label: "Bloqueado", cls: "bg-red-100 text-red-800 border-red-200" }
+        : { label: "Pendente", cls: "bg-amber-100 text-amber-800 border-amber-200" };
 
   const handleEnable = async () => {
     setLoading(true);
@@ -86,6 +104,17 @@ export const NotificationsCard = () => {
           <p className="text-xs text-muted-foreground mt-1">
             Receba um aviso no horário configurado de cada prática, mesmo quando o app não estiver aberto.
           </p>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Permissão do navegador:</span>
+            <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${statusMeta.cls}`}>
+              {statusMeta.label}
+            </span>
+          </div>
+          {perm === "denied" && (
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Para reativar, abra o cadeado ao lado do endereço do site e permita notificações.
+            </p>
+          )}
         </div>
       </div>
 
