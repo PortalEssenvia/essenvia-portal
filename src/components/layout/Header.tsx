@@ -106,10 +106,7 @@ export const Header = () => {
               alt=""
               aria-hidden="true"
               className={cn(
-                "h-16 w-16 object-contain rounded-full transition-smooth group-hover:scale-[1.03]",
-                scrolled || !isOnDarkHero
-                  ? "ring-2 ring-dourado/30"
-                  : "ring-2 ring-dourado/40 brightness-110"
+                "h-20 w-20 md:h-24 md:w-24 object-contain rounded-full transition-smooth group-hover:scale-[1.03]"
               )}
             />
           </div>
