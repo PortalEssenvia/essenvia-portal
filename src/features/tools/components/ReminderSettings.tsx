@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { PRACTICES, WEEK_DAYS } from "../constants";
+import { MORNING_PRACTICES, NIGHT_PRACTICES, PRACTICES, WEEK_DAYS } from "../constants";
 import { refreshReminders } from "@/lib/notifications";
 
 /** Mapeia o id usado no app para a chave gravada em practice_configs. */
@@ -141,8 +141,14 @@ export function ReminderSettings() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        {PRACTICES.map((p) => {
+      {[
+        { title: "☀️ Manhã", list: MORNING_PRACTICES },
+        { title: "🌙 Noite (higiene do sono)", list: NIGHT_PRACTICES },
+      ].map((group) => (
+        <div key={group.title} className="space-y-3">
+          <h4 className="font-display text-xl text-verde-profundo">{group.title}</h4>
+          <div className="grid md:grid-cols-2 gap-4">
+        {group.list.map((p) => {
           const row = rowFor(p.id);
           return (
             <Card key={p.id} className={cn("p-5 border-bege transition-smooth", !row.is_active && "opacity-70")}>
@@ -210,7 +216,9 @@ export function ReminderSettings() {
             </Card>
           );
         })}
-      </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
