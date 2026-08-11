@@ -97,6 +97,17 @@ export interface DiaryEntry {
 }
 export interface DiaryData extends PracticeConfigBase {}
 
+/** Prática simples da noite (higiene do sono): orientação + checklist. */
+export interface SleepStepData extends PracticeConfigBase {
+  notes?: string;
+  checked?: string[];
+}
+
+export interface SleepWindow {
+  bedtime: string;  // "22:30"
+  wakeTime: string; // "06:00"
+}
+
 export type RoutineCategory =
   | "Espiritual" | "Mental" | "Físico" | "Intelectual" | "Profissional" | "Alimentação" | "Descanso" | "Pessoal";
 
@@ -114,11 +125,16 @@ export interface RoutineActivity {
 
 export type PracticeId =
   | "oracao" | "afirmacao" | "gratidao" | "atividade"
-  | "meditacao" | "leitura" | "visualizacao" | "diario";
+  | "meditacao" | "leitura" | "visualizacao" | "diario"
+  | "telas" | "cafeina" | "relaxamento" | "gratidao_noite"
+  | "respiracao_sono" | "ambiente_sono";
+
+export type PracticePeriod = "manha" | "noite";
 
 export interface PracticeMeta {
   id: PracticeId;
   icon: string;
   label: string;
   color: string;
+  period: PracticePeriod;
 }
