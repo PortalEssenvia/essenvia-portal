@@ -64,7 +64,9 @@ export function SleepStepPractice({ id, open, onOpenChange, data, onChange, done
       </Section>
 
       <ScheduleConfig
-        data={data}
+        startTime={data.startTime}
+        endTime={data.endTime}
+        days={data.days}
         onChange={(p) => onChange(p)}
       />
     </PracticeDrawer>
