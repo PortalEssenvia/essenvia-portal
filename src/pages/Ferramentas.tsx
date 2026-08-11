@@ -5,13 +5,14 @@ import { SectionHeader } from "@/components/sections/SectionHeader";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-import { PRACTICES, PRACTICE_IDS, localDateKey } from "@/features/tools/constants";
+import { PRACTICES, PRACTICE_IDS, MORNING_PRACTICES, NIGHT_PRACTICES, localDateKey, SLEEP_DEFAULTS } from "@/features/tools/constants";
 import { useDailyDone, useDailyHistory, usePracticesConfig, useStreak } from "@/features/tools/hooks/usePractices";
 import type { PracticeId } from "@/features/tools/types";
 import { PracticeCard } from "@/features/tools/components/PracticeCard";
 import { RoutineBuilder } from "@/features/tools/components/RoutineBuilder";
 import { HistoryView } from "@/features/tools/components/HistoryView";
 import { ReminderSettings } from "@/features/tools/components/ReminderSettings";
+import { SleepWindowCard } from "@/features/tools/components/SleepWindowCard";
 import { StreakBadge, AchievementsCard, tierFor } from "@/features/tools/components/StreakBadge";
 import { celebrateMilestone, celebratePractice } from "@/features/tools/utils/celebrate";
 import { NotificationsCard } from "@/components/NotificationsCard";
@@ -25,9 +26,12 @@ import { MeditationPractice } from "@/features/tools/practices/MeditationPractic
 import { ReadingPractice } from "@/features/tools/practices/ReadingPractice";
 import { VisualizationPractice } from "@/features/tools/practices/VisualizationPractice";
 import { DiaryPractice } from "@/features/tools/practices/DiaryPractice";
+import { SleepStepPractice } from "@/features/tools/practices/SleepStepPractice";
+
+const SLEEP_STEP_IDS: PracticeId[] = ["cafeina", "telas", "relaxamento", "gratidao_noite", "respiracao_sono", "ambiente_sono"];
 
 const Ferramentas = () => {
-  const { cfg, update, isSaving } = usePracticesConfig();
+  const { cfg, update, isSaving, setSleepWindow } = usePracticesConfig();
   const { done, toggle, mark } = useDailyDone();
   const streak = useStreak();
   const history = useDailyHistory(35);
@@ -92,6 +96,26 @@ const Ferramentas = () => {
   }, [streak]);
 
   const progress = (done.length / PRACTICE_IDS.length) * 100;
+  const sleep = cfg.sleepWindow ?? SLEEP_DEFAULTS;
+  const countDone = (list: typeof PRACTICES) => list.filter((p) => done.includes(p.id)).length;
+  const morningDone = countDone(MORNING_PRACTICES);
+  const nightDone = countDone(NIGHT_PRACTICES);
+
+  const renderGroup = (list: typeof PRACTICES) => (
+    <div className="grid sm:grid-cols-2 gap-3">
+      {list.map((p) => (
+        <PracticeCard
+          key={p.id}
+          meta={p}
+          done={done.includes(p.id)}
+          active={cfg[p.id].active}
+          scheduleLabel={`${cfg[p.id].startTime} – ${cfg[p.id].endTime}`}
+          onToggle={() => handleToggle(p.id)}
+          onOpen={() => setOpen(p.id)}
+        />
+      ))}
+    </div>
+  );
 
   // Month calendar
   const year = now.getFullYear();
@@ -165,6 +189,7 @@ const Ferramentas = () => {
             </TabsList>
 
             <TabsContent value="praticas" className="space-y-8">
+              <SleepWindowCard value={sleep} onChange={(v, recalc) => setSleepWindow(v, recalc)} />
               <div className="grid lg:grid-cols-10 gap-6">
                 {/* LEFT 70% */}
                 <div className="lg:col-span-7 space-y-6">
@@ -181,18 +206,29 @@ const Ferramentas = () => {
                       <div className="h-full bg-gradient-gold transition-all duration-500" style={{ width: `${progress}%` }} />
                     </div>
 
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {PRACTICES.map((p) => (
-                        <PracticeCard
-                          key={p.id}
-                          meta={p}
-                          done={done.includes(p.id)}
-                          active={cfg[p.id].active}
-                          scheduleLabel={`${cfg[p.id].startTime} – ${cfg[p.id].endTime}`}
-                          onToggle={() => handleToggle(p.id)}
-                          onOpen={() => setOpen(p.id)}
-                        />
-                      ))}
+                    <div className="space-y-8">
+                      <div>
+                        <div className="flex items-baseline justify-between gap-3 mb-3">
+                          <h4 className="font-display text-xl text-verde-profundo">☀️ Manhã</h4>
+                          <span className="text-xs text-muted-foreground">
+                            desperta às {sleep.wakeTime} · {morningDone}/{MORNING_PRACTICES.length}
+                          </span>
+                        </div>
+                        {renderGroup(MORNING_PRACTICES)}
+                      </div>
+
+                      <div>
+                        <div className="flex items-baseline justify-between gap-3 mb-1">
+                          <h4 className="font-display text-xl text-verde-profundo">🌙 Noite</h4>
+                          <span className="text-xs text-muted-foreground">
+                            dormir às {sleep.bedtime} · {nightDone}/{NIGHT_PRACTICES.length}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          Rotina de higiene do sono — cada passo prepara o corpo para dormir melhor.
+                        </p>
+                        {renderGroup(NIGHT_PRACTICES)}
+                      </div>
                     </div>
 
                     {done.length === PRACTICE_IDS.length && (
@@ -306,6 +342,18 @@ const Ferramentas = () => {
       <ReadingPractice open={open === "leitura"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.leitura} onChange={(p) => update("leitura", p)} done={done.includes("leitura")} onComplete={() => handleComplete("leitura")} />
       <VisualizationPractice open={open === "visualizacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.visualizacao} onChange={(p) => update("visualizacao", p)} done={done.includes("visualizacao")} onComplete={() => handleComplete("visualizacao")} />
       <DiaryPractice open={open === "diario"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.diario} onChange={(p) => update("diario", p)} done={done.includes("diario")} onComplete={() => handleComplete("diario")} />
+      {SLEEP_STEP_IDS.map((id) => (
+        <SleepStepPractice
+          key={id}
+          id={id}
+          open={open === id}
+          onOpenChange={(o) => !o && setOpen(null)}
+          data={cfg[id] as any}
+          onChange={(p) => update(id, p as any)}
+          done={done.includes(id)}
+          onComplete={() => handleComplete(id)}
+        />
+      ))}
     </>
   );
 };
