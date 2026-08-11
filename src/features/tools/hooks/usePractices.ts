@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { PRACTICE_IDS, todayKey, localDateKey } from "../constants";
+import { PRACTICE_IDS, todayKey, localDateKey, SLEEP_DEFAULTS, scheduleFor } from "../constants";
 import type {
   AffirmationsData, DiaryData, GratitudeData,
   MeditationData, PhysicalData, PracticeId, PrayerData,
-  ReadingData, VisualizationData, WeekDay,
+  ReadingData, VisualizationData, WeekDay, SleepStepData, SleepWindow,
 } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,23 +18,37 @@ export interface PracticesConfig {
   leitura: ReadingData;
   visualizacao: VisualizationData;
   diario: DiaryData;
+  telas: SleepStepData;
+  cafeina: SleepStepData;
+  relaxamento: SleepStepData;
+  gratidao_noite: SleepStepData;
+  respiracao_sono: SleepStepData;
+  ambiente_sono: SleepStepData;
+  sleepWindow: SleepWindow;
 }
 
 const allDays: WeekDay[] = [0, 1, 2, 3, 4, 5, 6];
 
-const baseCfg = (start: string, end: string) => ({
-  active: true, startTime: start, endTime: end, days: allDays,
+const baseCfg = (id: PracticeId, sleep: SleepWindow) => ({
+  active: true, ...scheduleFor(id, sleep), days: allDays,
 });
 
-export const defaultConfig = (): PracticesConfig => ({
-  oracao: { ...baseCfg("06:00", "06:10"), text: "", fromHeart: false, customSuggestions: [] },
-  afirmacao: { ...baseCfg("06:10", "06:20"), items: [] },
-  gratidao: { ...baseCfg("06:20", "06:30"), items: [] },
-  atividade: { ...baseCfg("07:00", "07:30"), activities: [] },
-  meditacao: { ...baseCfg("06:30", "06:50"), items: [] },
-  leitura: { ...baseCfg("20:00", "20:30"), queue: [], history: [] },
-  visualizacao: { ...baseCfg("06:50", "07:00"), items: [] },
-  diario: { ...baseCfg("21:00", "21:15") },
+export const defaultConfig = (sleep: SleepWindow = SLEEP_DEFAULTS): PracticesConfig => ({
+  oracao: { ...baseCfg("oracao", sleep), text: "", fromHeart: false, customSuggestions: [] },
+  afirmacao: { ...baseCfg("afirmacao", sleep), items: [] },
+  gratidao: { ...baseCfg("gratidao", sleep), items: [] },
+  atividade: { ...baseCfg("atividade", sleep), activities: [] },
+  meditacao: { ...baseCfg("meditacao", sleep), items: [] },
+  leitura: { ...baseCfg("leitura", sleep), queue: [], history: [] },
+  visualizacao: { ...baseCfg("visualizacao", sleep), items: [] },
+  diario: { ...baseCfg("diario", sleep) },
+  telas: { ...baseCfg("telas", sleep), checked: [] },
+  cafeina: { ...baseCfg("cafeina", sleep), checked: [] },
+  relaxamento: { ...baseCfg("relaxamento", sleep), checked: [] },
+  gratidao_noite: { ...baseCfg("gratidao_noite", sleep), checked: [] },
+  respiracao_sono: { ...baseCfg("respiracao_sono", sleep), checked: [] },
+  ambiente_sono: { ...baseCfg("ambiente_sono", sleep), checked: [] },
+  sleepWindow: sleep,
 });
 
 /** Practices configuration synced with profiles.practices_config (jsonb). */
@@ -99,7 +113,20 @@ export function usePracticesConfig() {
     setCfg((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
   }, []);
 
-  return { cfg, setCfg, update, isSaving };
+  /** Atualiza a janela de sono e, opcionalmente, recalcula os horários sugeridos. */
+  const setSleepWindow = useCallback((sleep: SleepWindow, recalc = false) => {
+    setCfg((prev) => {
+      const next: PracticesConfig = { ...prev, sleepWindow: sleep };
+      if (recalc) {
+        PRACTICE_IDS.forEach((id) => {
+          next[id] = { ...(next[id] as any), ...scheduleFor(id, sleep) } as any;
+        });
+      }
+      return next;
+    });
+  }, []);
+
+  return { cfg, setCfg, update, isSaving, setSleepWindow };
 }
 
 /**

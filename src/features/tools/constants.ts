@@ -1,15 +1,136 @@
-import type { PracticeMeta, PracticeId } from "./types";
+import type { PracticeMeta, PracticeId, SleepWindow } from "./types";
 
 export const PRACTICES: PracticeMeta[] = [
-  { id: "oracao", icon: "🙏", label: "Oração", color: "verde-profundo" },
-  { id: "afirmacao", icon: "✨", label: "Afirmação Positiva", color: "dourado" },
-  { id: "gratidao", icon: "🙌", label: "Gratidão", color: "verde-medio" },
-  { id: "atividade", icon: "🏃", label: "Atividade Física", color: "verde-medio" },
-  { id: "meditacao", icon: "🧘", label: "Meditação", color: "verde-profundo" },
-  { id: "leitura", icon: "📚", label: "Leitura", color: "dourado" },
-  { id: "visualizacao", icon: "🌟", label: "Visualizações", color: "dourado" },
-  { id: "diario", icon: "📓", label: "Diário", color: "verde-profundo" },
+  // ☀️ Manhã
+  { id: "oracao", icon: "🙏", label: "Oração", color: "verde-profundo", period: "manha" },
+  { id: "afirmacao", icon: "✨", label: "Afirmação Positiva", color: "dourado", period: "manha" },
+  { id: "gratidao", icon: "🙌", label: "Gratidão", color: "verde-medio", period: "manha" },
+  { id: "meditacao", icon: "🧘", label: "Meditação", color: "verde-profundo", period: "manha" },
+  { id: "visualizacao", icon: "🌟", label: "Visualizações", color: "dourado", period: "manha" },
+  { id: "atividade", icon: "🏃", label: "Atividade Física", color: "verde-medio", period: "manha" },
+  // 🌙 Noite (higiene do sono)
+  { id: "cafeina", icon: "☕", label: "Sem cafeína e álcool", color: "verde-medio", period: "noite" },
+  { id: "telas", icon: "🌙", label: "Desligar telas", color: "verde-profundo", period: "noite" },
+  { id: "relaxamento", icon: "🛁", label: "Ritual de relaxamento", color: "verde-medio", period: "noite" },
+  { id: "diario", icon: "📓", label: "Diário", color: "verde-profundo", period: "noite" },
+  { id: "gratidao_noite", icon: "🙏", label: "Gratidão da noite", color: "dourado", period: "noite" },
+  { id: "leitura", icon: "📚", label: "Leitura", color: "dourado", period: "noite" },
+  { id: "respiracao_sono", icon: "🧘", label: "Respiração para dormir", color: "verde-profundo", period: "noite" },
+  { id: "ambiente_sono", icon: "🛏️", label: "Ambiente do sono", color: "verde-medio", period: "noite" },
 ];
+
+export const MORNING_PRACTICES = PRACTICES.filter((p) => p.period === "manha");
+export const NIGHT_PRACTICES = PRACTICES.filter((p) => p.period === "noite");
+
+/** Janela de sono padrão. */
+export const SLEEP_DEFAULTS: SleepWindow = { bedtime: "22:30", wakeTime: "06:00" };
+
+/** Soma minutos a um horário "HH:MM" (com volta em 24h). */
+export const addMinutes = (hhmm: string, delta: number): string => {
+  const [h, m] = hhmm.split(":").map(Number);
+  const total = ((h * 60 + m + delta) % 1440 + 1440) % 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+};
+
+export const minutesOf = (hhmm: string): number => {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+};
+
+/** Horas de sono entre dormir e acordar. */
+export const sleepHours = ({ bedtime, wakeTime }: SleepWindow): number => {
+  const diff = (minutesOf(wakeTime) - minutesOf(bedtime) + 1440) % 1440;
+  return Math.round((diff / 60) * 10) / 10;
+};
+
+/** Offsets em minutos APÓS acordar (início, fim). */
+export const MORNING_OFFSETS: Record<string, [number, number]> = {
+  oracao: [0, 10],
+  afirmacao: [10, 20],
+  gratidao: [20, 30],
+  meditacao: [30, 50],
+  visualizacao: [50, 60],
+  atividade: [60, 110],
+};
+
+/** Offsets em minutos ANTES de dormir (início, fim). */
+export const NIGHT_OFFSETS: Record<string, [number, number]> = {
+  cafeina: [360, 350],
+  telas: [90, 80],
+  relaxamento: [60, 50],
+  diario: [50, 40],
+  gratidao_noite: [40, 35],
+  leitura: [35, 15],
+  respiracao_sono: [15, 10],
+  ambiente_sono: [10, 5],
+};
+
+/** Horários sugeridos de uma prática a partir da janela de sono. */
+export const scheduleFor = (id: string, sleep: SleepWindow): { startTime: string; endTime: string } => {
+  const m = MORNING_OFFSETS[id];
+  if (m) return { startTime: addMinutes(sleep.wakeTime, m[0]), endTime: addMinutes(sleep.wakeTime, m[1]) };
+  const n = NIGHT_OFFSETS[id];
+  if (n) return { startTime: addMinutes(sleep.bedtime, -n[0]), endTime: addMinutes(sleep.bedtime, -n[1]) };
+  return { startTime: "07:00", endTime: "07:15" };
+};
+
+/** Orientações de higiene do sono para as práticas noturnas. */
+export const NIGHT_GUIDES: Record<string, { intro: string; steps: string[] }> = {
+  cafeina: {
+    intro: "Cafeína pode permanecer no corpo por até 8 horas e o álcool fragmenta o sono profundo. Encerre o consumo cedo.",
+    steps: [
+      "Última dose de café, chá preto, mate ou energético no início da tarde",
+      "Evitar álcool nas horas que antecedem o sono",
+      "Jantar leve, sem refeições pesadas perto de dormir",
+      "Reduzir líquidos na última hora para não acordar de madrugada",
+    ],
+  },
+  telas: {
+    intro: "A luz azul atrasa a melatonina. Desconectar antes de dormir acelera o adormecer.",
+    steps: [
+      "Guardar celular, TV e computador",
+      "Ativar modo noturno nos aparelhos que ficarem ligados",
+      "Deixar o celular fora do quarto ou em modo não perturbe",
+      "Reduzir a iluminação da casa (luz amarela e baixa)",
+    ],
+  },
+  relaxamento: {
+    intro: "Um ritual repetido todas as noites ensina o corpo a reconhecer a hora de desacelerar.",
+    steps: [
+      "Banho morno",
+      "Alongamento leve por 5 minutos",
+      "Preparar o que precisa para amanhã",
+      "Música calma ou silêncio",
+    ],
+  },
+  gratidao_noite: {
+    intro: "Fechar o dia reconhecendo o que foi bom reduz a ruminação mental na cama.",
+    steps: [
+      "Listar 3 coisas boas de hoje",
+      "Reconhecer uma pessoa que ajudou",
+      "Agradecer por algo simples do dia",
+    ],
+  },
+  respiracao_sono: {
+    intro: "Respiração lenta ativa o sistema parassimpático e prepara o corpo para dormir.",
+    steps: [
+      "Respiração 4-7-8 por 4 ciclos",
+      "Relaxar o corpo dos pés à cabeça",
+      "Soltar a mandíbula e os ombros",
+      "Deixar os pensamentos passarem sem julgar",
+    ],
+  },
+  ambiente_sono: {
+    intro: "Escuro, silencioso e fresco: o quarto ideal para um sono profundo.",
+    steps: [
+      "Quarto escuro (cortina/máscara)",
+      "Temperatura agradável (18–22 °C)",
+      "Silêncio ou ruído branco",
+      "Cama só para dormir e descansar",
+      "Despertador definido no horário de acordar",
+    ],
+  },
+};
 
 export const WEEK_DAYS = [
   { value: 0, label: "Dom" },
