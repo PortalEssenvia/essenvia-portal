@@ -44,7 +44,7 @@ onBackgroundMessage(messaging, (payload) => {
       { action: "open", title: "Abrir" },
       { action: "snooze", title: `Soneca ${snoozeMin} min` },
     ],
-  });
+  } as NotificationOptions);
 });
 
 // Workbox PWA default behavior

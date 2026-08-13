@@ -82,7 +82,7 @@ async function showReminder(practiceKey: string, snoozeMin: number, snoozed = fa
           { action: "open", title: "Abrir" },
           { action: "snooze", title: `Soneca ${snoozeMin} min` },
         ],
-      });
+      } as NotificationOptions);
       return;
     }
   } catch {
