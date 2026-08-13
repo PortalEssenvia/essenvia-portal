@@ -31,13 +31,19 @@ onBackgroundMessage(messaging, (payload) => {
   const badge = "/logo.png";
   const tag = payload.data?.tag || "practice-reminder";
 
+  const snoozeMin = Number(payload.data?.snooze_min || 10);
+
   self.registration.showNotification(title, {
     body,
     icon,
     badge,
     tag,
     data: payload.data,
-    requireInteraction: false,
+    requireInteraction: true,
+    actions: [
+      { action: "open", title: "Abrir" },
+      { action: "snooze", title: `Soneca ${snoozeMin} min` },
+    ],
   });
 });
 
@@ -97,9 +103,25 @@ registerRoute(
   })
 );
 
+const SNOOZE_ENDPOINT = "https://nubpxsrhnaulmxokhrgb.supabase.co/functions/v1/snooze-reminder";
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const urlToOpen = event.notification.data?.url || "/ferramentas";
+  const data = event.notification.data || {};
+
+  // Ação "Soneca": reagenda o lembrete no servidor e não abre o app.
+  if (event.action === "snooze" && data.snooze_token) {
+    event.waitUntil(
+      fetch(SNOOZE_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: data.snooze_token, minutes: Number(data.snooze_min || 10) }),
+      }).catch(() => undefined),
+    );
+    return;
+  }
+
+  const urlToOpen = data.url || "/ferramentas";
   event.waitUntil(
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
