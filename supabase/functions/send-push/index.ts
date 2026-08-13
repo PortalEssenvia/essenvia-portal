@@ -4,6 +4,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { signSnoozeToken } from "../_shared/snoozeToken.ts";
 
 const FCM_URL = "https://fcm.googleapis.com/v1/projects/constante-renovacao/messages:send";
 
@@ -98,21 +99,57 @@ Deno.serve(async (req) => {
     const minute = parts.find((p) => p.type === "minute")?.value ?? "00";
     const currentTime = `${hour}:${minute}`;
 
-    // 3) Busca práticas ativas que começam exatamente agora
+    const weekday = Number(
+      new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", weekday: "short" })
+        .format(new Date())
+        .replace(/Sun|Mon|Tue|Wed|Thu|Fri|Sat/, (d) =>
+          String(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(d)),
+        ),
+    );
+
+    // 3) Práticas ativas cujo horário é agora e que valem para o dia da semana
     const { data: practices, error: practicesErr } = await supabase
       .from("practice_configs")
-      .select("user_id, practice_key, start_time")
+      .select("user_id, practice_key, start_time, week_days, snooze_min")
       .eq("is_active", true)
       .not("start_time", "is", null);
 
     if (practicesErr) throw practicesErr;
 
-    const duePractices = (practices ?? []).filter((p) => {
-      const t = (p.start_time as string).slice(0, 5); // "HH:MM"
-      return t === currentTime;
-    });
+    type Due = { user_id: string; practice_key: string; snooze_min: number; snoozed?: boolean; id?: string };
 
-    if (!duePractices.length) {
+    const due: Due[] = (practices ?? [])
+      .filter((p) => {
+        const t = (p.start_time as string).slice(0, 5);
+        if (t !== currentTime) return false;
+        const days = (p.week_days as number[] | null) ?? [];
+        return days.length === 0 || days.includes(weekday);
+      })
+      .map((p) => ({
+        user_id: p.user_id as string,
+        practice_key: p.practice_key as string,
+        snooze_min: (p.snooze_min as number) ?? 10,
+      }));
+
+    // 3b) Sonecas vencidas (lembretes adiados)
+    const { data: snoozes } = await supabase
+      .from("reminder_snoozes")
+      .select("id, user_id, practice_key")
+      .eq("sent", false)
+      .lte("remind_at", new Date().toISOString())
+      .limit(200);
+
+    (snoozes ?? []).forEach((s) =>
+      due.push({
+        id: s.id as string,
+        user_id: s.user_id as string,
+        practice_key: s.practice_key as string,
+        snooze_min: 10,
+        snoozed: true,
+      }),
+    );
+
+    if (!due.length) {
       return new Response(
         JSON.stringify({ ok: true, sent: 0, reason: "no_due_practices", currentTime }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -128,22 +165,38 @@ Deno.serve(async (req) => {
       visualizacao: "🌅 Visualização guiada",
       atividade_fisica: "🏃 Atividade física",
       diario: "📓 Escreva no seu diário",
+      // 🌙 Higiene do sono
+      cafeina: "☕ Encerre cafeína e álcool por hoje",
+      telas: "🌙 Hora de desligar as telas",
+      relaxamento: "🛁 Comece seu ritual de relaxamento",
+      gratidao_noite: "🙏 Gratidão da noite",
+      respiracao_sono: "🧘 Respiração para dormir",
+      ambiente_sono: "🛏️ Prepare o ambiente do sono",
     };
 
     // 4) Para cada prática, busca tokens do usuário e dispara FCM
     let sent = 0;
     let failed = 0;
 
-    for (const p of duePractices) {
+    for (const p of due) {
       const { data: tokens } = await supabase
         .from("push_tokens")
         .select("token")
         .eq("user_id", p.user_id);
 
+      if (p.id) await supabase.from("reminder_snoozes").update({ sent: true }).eq("id", p.id);
       if (!tokens?.length) continue;
 
       const title = "Nova Essenvia";
-      const body = PRACTICE_LABEL[p.practice_key] ?? "Hora de uma prática";
+      const base = PRACTICE_LABEL[p.practice_key] ?? "Hora de uma prática";
+      const body = p.snoozed ? `⏰ Lembrete adiado — ${base}` : base;
+
+      const snoozeToken = await signSnoozeToken({
+        u: p.user_id,
+        p: p.practice_key,
+        m: p.snooze_min,
+        e: Math.floor(Date.now() / 1000) + 60 * 60 * 6,
+      });
 
       for (const { token } of tokens) {
         const res = await fetch(FCM_URL, {
@@ -160,6 +213,8 @@ Deno.serve(async (req) => {
                 practice_key: p.practice_key,
                 url: "/ferramentas",
                 tag: `practice-${p.practice_key}`,
+                snooze_token: snoozeToken,
+                snooze_min: String(p.snooze_min),
               },
               android: { notification: { channel_id: "practices" } },
               apns: {
@@ -177,7 +232,6 @@ Deno.serve(async (req) => {
           failed++;
           const errBody = await res.text();
           console.error(`[send-push] falha token ${token.slice(0, 16)}...:`, res.status, errBody);
-          // Se o token for inválido, remove
           if (res.status === 404 || res.status === 400) {
             await supabase.from("push_tokens").delete().eq("token", token);
           }
@@ -186,7 +240,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ ok: true, sent, failed, currentTime, duePracticesCount: duePractices.length }),
+      JSON.stringify({ ok: true, sent, failed, currentTime, duePracticesCount: due.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
