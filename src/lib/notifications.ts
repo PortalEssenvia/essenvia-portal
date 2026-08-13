@@ -1,6 +1,6 @@
 // Lembretes locais das práticas diárias via Notification API.
-// Não é push server-side (isso exigiria FCM/VAPID). Funciona enquanto
-// a aba/app instalado estiver ativa e reagenda a cada dia.
+// Complementa o push server-side: enquanto a aba/app estiver aberta,
+// os avisos são reagendados diariamente e aceitam soneca.
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,9 +12,10 @@ export type ReminderConfig = {
   start_time: string | null; // "HH:MM:SS" ou "HH:MM"
   is_active: boolean;
   week_days: number[] | null;
+  snooze_min?: number | null;
 };
 
-const PRACTICE_LABEL: Record<string, string> = {
+export const PRACTICE_LABEL: Record<string, string> = {
   oracao: "🙏 Hora da oração",
   meditacao: "🧘 Momento de meditação",
   afirmacao: "✨ Afirmações do dia",
@@ -23,6 +24,13 @@ const PRACTICE_LABEL: Record<string, string> = {
   visualizacao: "🌅 Visualização guiada",
   atividade_fisica: "🏃 Atividade física",
   diario: "📓 Escreva no seu diário",
+  // 🌙 Higiene do sono
+  cafeina: "☕ Encerre cafeína e álcool por hoje",
+  telas: "🌙 Hora de desligar as telas",
+  relaxamento: "🛁 Comece seu ritual de relaxamento",
+  gratidao_noite: "🙏 Gratidão da noite",
+  respiracao_sono: "🧘 Respiração para dormir",
+  ambiente_sono: "🛏️ Prepare o ambiente do sono",
 };
 
 export function notificationsEnabled(): boolean {
@@ -53,49 +61,104 @@ function clearAllTimers() {
   timers.clear();
 }
 
+async function showReminder(practiceKey: string, snoozeMin: number, snoozed = false) {
+  const base = PRACTICE_LABEL[practiceKey] ?? "Hora de uma prática";
+  const body = snoozed ? `⏰ Lembrete adiado — ${base}` : base;
+  const options: NotificationOptions & { actions?: { action: string; title: string }[] } = {
+    body,
+    icon: "/logo.png",
+    badge: "/logo.png",
+    tag: `practice-${practiceKey}`,
+    data: { practice_key: practiceKey, snooze_min: snoozeMin, url: "/ferramentas" },
+  };
+
+  try {
+    const reg = await navigator.serviceWorker?.ready;
+    if (reg) {
+      await reg.showNotification("Nova Essenvia", {
+        ...options,
+        requireInteraction: true,
+        actions: [
+          { action: "open", title: "Abrir" },
+          { action: "snooze", title: `Soneca ${snoozeMin} min` },
+        ],
+      });
+      return;
+    }
+  } catch {
+    /* cai para a Notification simples */
+  }
+
+  try {
+    new Notification("Nova Essenvia", options);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Reagenda um lembrete local depois de X minutos (soneca). */
+export function snoozeLocal(practiceKey: string, minutes: number) {
+  const id = window.setTimeout(() => {
+    timers.delete(id);
+    void showReminder(practiceKey, minutes, true);
+  }, Math.max(1, minutes) * 60_000);
+  timers.add(id);
+}
+
 function scheduleOne(cfg: ReminderConfig) {
   if (!cfg.is_active || !cfg.start_time) return;
   const [h, m] = cfg.start_time.split(":").map(Number);
   if (Number.isNaN(h) || Number.isNaN(m)) return;
+
+  const days = cfg.week_days && cfg.week_days.length ? cfg.week_days : [0, 1, 2, 3, 4, 5, 6];
+  const snoozeMin = cfg.snooze_min ?? 10;
 
   const now = new Date();
   const target = new Date();
   target.setHours(h, m, 0, 0);
   if (target.getTime() <= now.getTime()) target.setDate(target.getDate() + 1);
 
-  const jsWeekday = target.getDay(); // 0=Dom..6=Sáb
-  if (cfg.week_days && cfg.week_days.length && !cfg.week_days.includes(jsWeekday)) return;
+  // Avança até o próximo dia da semana habilitado (repetição diária/semanal).
+  let guard = 0;
+  while (!days.includes(target.getDay()) && guard < 7) {
+    target.setDate(target.getDate() + 1);
+    guard++;
+  }
+  if (!days.includes(target.getDay())) return;
 
   const delay = target.getTime() - now.getTime();
   if (delay > 2_147_000_000) return; // limite do setTimeout
 
   const id = window.setTimeout(() => {
     timers.delete(id);
-    try {
-      new Notification("Nova Essenvia", {
-        body: PRACTICE_LABEL[cfg.practice_key] ?? "Hora de uma prática",
-        icon: "/logo.png",
-        badge: "/logo.png",
-        tag: `practice-${cfg.practice_key}`,
-      });
-    } catch {
-      /* ignore */
-    }
-    // reagenda para o próximo dia
-    scheduleOne(cfg);
+    void showReminder(cfg.practice_key, snoozeMin);
+    scheduleOne(cfg); // repete no próximo dia válido
   }, delay);
   timers.add(id);
+}
+
+let swListenerBound = false;
+function bindSwListener() {
+  if (swListenerBound || typeof navigator === "undefined" || !navigator.serviceWorker) return;
+  swListenerBound = true;
+  navigator.serviceWorker.addEventListener("message", (event: MessageEvent) => {
+    const data = event.data;
+    if (data?.type === "snooze-local" && data.practice_key) {
+      snoozeLocal(data.practice_key, Number(data.minutes) || 10);
+    }
+  });
 }
 
 export async function refreshReminders() {
   if (!notificationsEnabled() || Notification.permission !== "granted") return;
   clearAllTimers();
+  bindSwListener();
   const { data: userRes } = await supabase.auth.getUser();
   const uid = userRes.user?.id;
   if (!uid) return;
   const { data } = await supabase
     .from("practice_configs")
-    .select("practice_key, start_time, is_active, week_days")
+    .select("practice_key, start_time, is_active, week_days, snooze_min")
     .eq("user_id", uid);
   (data ?? []).forEach((c) => scheduleOne(c as ReminderConfig));
 }

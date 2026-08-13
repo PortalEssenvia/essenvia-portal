@@ -110,6 +110,22 @@ self.addEventListener("notificationclick", (event) => {
   const data = event.notification.data || {};
 
   // Ação "Soneca": reagenda o lembrete no servidor e não abre o app.
+  if (event.action === "snooze" && !data.snooze_token) {
+    // Lembrete local (app aberto): devolve para a página reagendar.
+    event.waitUntil(
+      self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+        list.forEach((c) =>
+          c.postMessage({
+            type: "snooze-local",
+            practice_key: data.practice_key,
+            minutes: Number(data.snooze_min || 10),
+          }),
+        );
+      }),
+    );
+    return;
+  }
+
   if (event.action === "snooze" && data.snooze_token) {
     event.waitUntil(
       fetch(SNOOZE_ENDPOINT, {
