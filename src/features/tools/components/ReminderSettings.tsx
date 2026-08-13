@@ -9,8 +9,10 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { MORNING_PRACTICES, NIGHT_PRACTICES, PRACTICES, WEEK_DAYS } from "../constants";
+import { MORNING_PRACTICES, NIGHT_PRACTICES, PRACTICES, WEEK_DAYS, scheduleFor } from "../constants";
 import { refreshReminders } from "@/lib/notifications";
+import { usePracticesConfig } from "../hooks/usePractices";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 /** Mapeia o id usado no app para a chave gravada em practice_configs. */
 const DB_KEY: Record<string, string> = { atividade: "atividade_fisica" };
@@ -21,7 +23,10 @@ type Row = {
   is_active: boolean;
   start_time: string; // "HH:MM"
   week_days: number[];
+  snooze_min: number;
 };
+
+const SNOOZE_OPTIONS = [5, 10, 15, 20, 30];
 
 const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
 
@@ -29,6 +34,7 @@ const hhmm = (v: string | null) => (v ? v.slice(0, 5) : "06:00");
 
 export function ReminderSettings() {
   const { user } = useAuth();
+  const { cfg } = usePracticesConfig();
   const [rows, setRows] = useState<Record<string, Row>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -39,7 +45,7 @@ export function ReminderSettings() {
     (async () => {
       const { data, error } = await supabase
         .from("practice_configs")
-        .select("practice_key, is_active, start_time, week_days")
+        .select("practice_key, is_active, start_time, week_days, snooze_min")
         .eq("user_id", user.id);
       if (cancelled) return;
       if (error) {
@@ -53,6 +59,7 @@ export function ReminderSettings() {
           is_active: !!r.is_active,
           start_time: hhmm(r.start_time),
           week_days: (r.week_days ?? ALL_DAYS) as number[],
+          snooze_min: (r.snooze_min ?? 10) as number,
         };
       });
       setRows(map);
@@ -67,6 +74,7 @@ export function ReminderSettings() {
       is_active: false,
       start_time: "06:00",
       week_days: ALL_DAYS,
+      snooze_min: 10,
     };
 
   const persist = useCallback(
@@ -82,6 +90,7 @@ export function ReminderSettings() {
             is_active: row.is_active,
             start_time: `${row.start_time}:00`,
             week_days: row.week_days,
+            snooze_min: row.snooze_min,
           },
           { onConflict: "user_id,practice_key" },
         );
@@ -117,6 +126,15 @@ export function ReminderSettings() {
     toast.success("Dias replicados para todas as práticas.");
   };
 
+  const applySleepWindow = () => {
+    const sleep = cfg.sleepWindow;
+    NIGHT_PRACTICES.forEach((p) => {
+      const { startTime } = scheduleFor(p.id, sleep);
+      patch(p.id, { start_time: startTime, is_active: true });
+    });
+    toast.success(`Horários da noite ajustados para dormir às ${sleep.bedtime}.`);
+  };
+
   if (!user) return null;
 
   if (loading) {
@@ -146,7 +164,14 @@ export function ReminderSettings() {
         { title: "🌙 Noite (higiene do sono)", list: NIGHT_PRACTICES },
       ].map((group) => (
         <div key={group.title} className="space-y-3">
-          <h4 className="font-display text-xl text-verde-profundo">{group.title}</h4>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 className="font-display text-xl text-verde-profundo">{group.title}</h4>
+            {group.list === NIGHT_PRACTICES && (
+              <Button variant="outline" size="sm" onClick={applySleepWindow}>
+                Usar horários da janela de sono ({cfg.sleepWindow.bedtime} → {cfg.sleepWindow.wakeTime})
+              </Button>
+            )}
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
         {group.list.map((p) => {
           const row = rowFor(p.id);
@@ -201,6 +226,26 @@ export function ReminderSettings() {
                       );
                     })}
                   </div>
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">Soneca (adiar lembrete)</Label>
+                  <Select
+                    value={String(row.snooze_min)}
+                    disabled={!row.is_active}
+                    onValueChange={(v) => patch(p.id, { snooze_min: Number(v) })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SNOOZE_OPTIONS.map((n) => (
+                        <SelectItem key={n} value={String(n)}>
+                          {n} minutos
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <Button

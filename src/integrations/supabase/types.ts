@@ -493,6 +493,7 @@ export type Database = {
           id: string
           is_active: boolean
           practice_key: string
+          snooze_min: number
           sort_order: number
           start_time: string | null
           updated_at: string
@@ -505,6 +506,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           practice_key: string
+          snooze_min?: number
           sort_order?: number
           start_time?: string | null
           updated_at?: string
@@ -517,6 +519,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           practice_key?: string
+          snooze_min?: number
           sort_order?: number
           start_time?: string | null
           updated_at?: string
@@ -701,6 +704,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      reminder_snoozes: {
+        Row: {
+          created_at: string
+          id: string
+          practice_key: string
+          remind_at: string
+          sent: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          practice_key: string
+          remind_at: string
+          sent?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          practice_key?: string
+          remind_at?: string
+          sent?: boolean
+          user_id?: string
+        }
+        Relationships: []
       }
       routine_activities: {
         Row: {
