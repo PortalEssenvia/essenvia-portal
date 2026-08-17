@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { PRACTICES, MORNING_PRACTICES, NIGHT_PRACTICES, localDateKey } from "../constants";
 import type { PracticeId } from "../types";
 import { cn } from "@/lib/utils";
+import { NightStreakCard } from "./NightStreakCard";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   BarChart, Bar, Legend,
@@ -196,6 +197,9 @@ export function HistoryView() {
           <p className="font-display text-3xl text-verde-profundo">{adherence}%</p>
         </Card>
       </div>
+
+      {/* Night streak */}
+      <NightStreakCard logs={allLogs} />
 
       {/* Evolution chart */}
       <Card className="p-6 bg-card border-bege shadow-soft">
