@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { PRACTICE_IDS, todayKey, localDateKey, SLEEP_DEFAULTS, scheduleFor } from "../constants";
+import { PRACTICE_IDS, NIGHT_PRACTICES, todayKey, localDateKey, SLEEP_DEFAULTS, scheduleFor } from "../constants";
 import type {
   AffirmationsData, DiaryData, GratitudeData,
   MeditationData, PhysicalData, PracticeId, PrayerData,
@@ -240,6 +240,75 @@ export function useStreak() {
   }, [user]);
 
   return streak;
+}
+
+/** Map of date->done practices for past N days. */
+/**
+ * Sequência (streak) das práticas da NOITE: dias seguidos em que a taxa de
+ * cumprimento das práticas noturnas ficou >= `minRate` (0-100).
+ * O dia de hoje não quebra a sequência se ainda não atingiu a meta.
+ */
+export function useNightStreak(minRate: number = 80) {
+  const { user } = useAuth();
+  const [data, setData] = useState({ streak: 0, best: 0, todayRate: 0 });
+
+  useEffect(() => {
+    if (!user) { setData({ streak: 0, best: 0, todayRate: 0 }); return; }
+    let cancelled = false;
+    (async () => {
+      const since = new Date();
+      since.setDate(since.getDate() - 366);
+      const nightIds = new Set(NIGHT_PRACTICES.map((p) => p.id as string));
+      const { data: rows } = await supabase
+        .from("daily_practice_logs")
+        .select("log_date,practice_key,completed")
+        .eq("user_id", user.id)
+        .eq("completed", true)
+        .gte("log_date", localDateKey(since));
+      if (cancelled || !rows) return;
+
+      const map = new Map<string, Set<string>>();
+      (rows as any[]).forEach((r) => {
+        if (!nightIds.has(r.practice_key)) return;
+        const set = map.get(r.log_date) ?? new Set<string>();
+        set.add(r.practice_key);
+        map.set(r.log_date, set);
+      });
+
+      const rateOf = (key: string) =>
+        Math.round(((map.get(key)?.size ?? 0) / nightIds.size) * 100);
+
+      const todayRate = rateOf(localDateKey(new Date()));
+
+      // Sequência atual
+      let streak = 0;
+      const d = new Date();
+      for (let i = 0; i < 366; i++) {
+        const ok = rateOf(localDateKey(d)) >= minRate;
+        if (ok) {
+          streak++;
+          d.setDate(d.getDate() - 1);
+        } else if (i === 0) {
+          d.setDate(d.getDate() - 1); // hoje ainda pode ser cumprido
+        } else break;
+      }
+
+      // Melhor sequência do período
+      let best = 0, run = 0;
+      const c = new Date();
+      c.setDate(c.getDate() - 365);
+      for (let i = 0; i <= 365; i++) {
+        if (rateOf(localDateKey(c)) >= minRate) { run++; best = Math.max(best, run); }
+        else run = 0;
+        c.setDate(c.getDate() + 1);
+      }
+
+      setData({ streak, best: Math.max(best, streak), todayRate });
+    })();
+    return () => { cancelled = true; };
+  }, [user, minRate]);
+
+  return data;
 }
 
 /** Map of date->done practices for past N days. */
