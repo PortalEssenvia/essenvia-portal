@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { PRACTICES, PRACTICE_IDS, localDateKey } from "../constants";
+import { PRACTICES, PRACTICE_IDS, MORNING_PRACTICES, NIGHT_PRACTICES, localDateKey } from "../constants";
 import type { PracticeId } from "../types";
 import { cn } from "@/lib/utils";
 import {
@@ -11,6 +11,9 @@ import {
 } from "recharts";
 
 type Range = 7 | 30 | 90;
+type PeriodFilter = "todas" | "manha" | "noite";
+
+type LogRow = { date: string; practice: PracticeId; at: string | null };
 
 /**
  * Histórico & Evolução — busca daily_practice_logs do usuário no intervalo
@@ -22,11 +25,12 @@ type Range = 7 | 30 | 90;
 export function HistoryView() {
   const { user } = useAuth();
   const [range, setRange] = useState<Range>(30);
-  const [logs, setLogs] = useState<{ date: string; practice: PracticeId }[]>([]);
+  const [period, setPeriod] = useState<PeriodFilter>("todas");
+  const [allLogs, setAllLogs] = useState<LogRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) { setLogs([]); setLoading(false); return; }
+    if (!user) { setAllLogs([]); setLoading(false); return; }
     let cancelled = false;
     setLoading(true);
     (async () => {
@@ -34,17 +38,39 @@ export function HistoryView() {
       since.setDate(since.getDate() - (range - 1));
       const { data } = await supabase
         .from("daily_practice_logs")
-        .select("log_date,practice_key,completed")
+        .select("log_date,practice_key,completed,completed_at")
         .eq("user_id", user.id)
         .eq("completed", true)
         .gte("log_date", localDateKey(since))
         .order("log_date", { ascending: false });
       if (cancelled) return;
-      setLogs(((data ?? []) as any[]).map((r) => ({ date: r.log_date, practice: r.practice_key })));
+      setAllLogs(((data ?? []) as any[]).map((r) => ({
+        date: r.log_date, practice: r.practice_key, at: r.completed_at ?? null,
+      })));
       setLoading(false);
     })();
     return () => { cancelled = true; };
   }, [user, range]);
+
+  // Practices considered for the selected period
+  const scopePractices = useMemo(
+    () => (period === "manha" ? MORNING_PRACTICES : period === "noite" ? NIGHT_PRACTICES : PRACTICES),
+    [period]
+  );
+  const scopeIds = useMemo(() => new Set(scopePractices.map((p) => p.id)), [scopePractices]);
+  const target = scopePractices.length;
+
+  const logs = useMemo(() => allLogs.filter((l) => scopeIds.has(l.practice)), [allLogs, scopeIds]);
+
+  // Completion time per date+practice
+  const timeOf = useMemo(() => {
+    const m = new Map<string, string>();
+    allLogs.forEach((l) => {
+      if (!l.at) return;
+      m.set(`${l.date}|${l.practice}`, new Date(l.at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
+    });
+    return m;
+  }, [allLogs]);
 
   // Map date -> practices done
   const byDate = useMemo(() => {
@@ -59,7 +85,7 @@ export function HistoryView() {
 
   // Build continuous day series for the range
   const series = useMemo(() => {
-    const out: { date: string; label: string; count: number }[] = [];
+    const out: { date: string; label: string; count: number; rate: number }[] = [];
     for (let i = range - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -68,27 +94,28 @@ export function HistoryView() {
         date: k,
         label: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
         count: byDate.get(k)?.size ?? 0,
+        rate: Math.round(((byDate.get(k)?.size ?? 0) / target) * 100),
       });
     }
     return out;
-  }, [byDate, range]);
+  }, [byDate, range, target]);
 
   // Per-practice totals
   const perPractice = useMemo(() => {
-    return PRACTICES.map((p) => ({
+    return scopePractices.map((p) => ({
       name: p.label,
       icon: p.icon,
       total: logs.filter((l) => l.practice === p.id).length,
     }));
-  }, [logs]);
+  }, [logs, scopePractices]);
 
   const totalDone = logs.length;
   const fullDays = useMemo(
-    () => Array.from(byDate.values()).filter((s) => s.size === PRACTICE_IDS.length).length,
-    [byDate]
+    () => Array.from(byDate.values()).filter((s) => s.size === target).length,
+    [byDate, target]
   );
   const avgPerDay = (totalDone / range).toFixed(1);
-  const adherence = Math.round((totalDone / (range * PRACTICE_IDS.length)) * 100);
+  const adherence = Math.round((totalDone / (range * target)) * 100);
 
   // Detailed history list (only days with at least one practice)
   const historyList = useMemo(() => {
@@ -98,13 +125,13 @@ export function HistoryView() {
       .filter((d) => d.count > 0)
       .map((d) => ({
         ...d,
-        practices: PRACTICES.filter((p) => byDate.get(d.date)?.has(p.id)),
-        full: (byDate.get(d.date)?.size ?? 0) === PRACTICE_IDS.length,
+        practices: scopePractices.filter((p) => byDate.get(d.date)?.has(p.id)),
+        full: (byDate.get(d.date)?.size ?? 0) === target,
         prettyDate: new Date(d.date + "T00:00:00").toLocaleDateString("pt-BR", {
           weekday: "long", day: "2-digit", month: "long",
         }),
       }));
-  }, [series, byDate]);
+  }, [series, byDate, scopePractices, target]);
 
   return (
     <div className="space-y-6">
@@ -116,7 +143,22 @@ export function HistoryView() {
             Acompanhe sua jornada e veja como você está evoluindo.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {([["todas", "Todas"], ["manha", "☀️ Manhã"], ["noite", "🌙 Noite"]] as [PeriodFilter, string][]).map(([v, l]) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setPeriod(v)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-sm font-medium transition-smooth border",
+                period === v
+                  ? "bg-dourado text-verde-profundo border-dourado"
+                  : "bg-card text-verde-profundo border-bege hover:border-dourado"
+              )}
+            >
+              {l}
+            </button>
+          ))}
           {([7, 30, 90] as Range[]).map((r) => (
             <button
               key={r}
@@ -164,7 +206,7 @@ export function HistoryView() {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
               <YAxis
-                domain={[0, PRACTICE_IDS.length]}
+                domain={[0, target]}
                 allowDecimals={false}
                 tick={{ fontSize: 11 }}
                 stroke="hsl(var(--muted-foreground))"
@@ -176,7 +218,7 @@ export function HistoryView() {
                   borderRadius: 8,
                   fontSize: 12,
                 }}
-                formatter={(v: number) => [`${v} / ${PRACTICE_IDS.length}`, "Práticas"]}
+                formatter={(v: number) => [`${v} / ${target} (${Math.round((v / target) * 100)}%)`, "Práticas"]}
               />
               <Line
                 type="monotone"
@@ -239,7 +281,7 @@ export function HistoryView() {
                 <div className="min-w-[180px]">
                   <p className="font-medium text-verde-profundo capitalize">{d.prettyDate}</p>
                   <p className="text-xs text-muted-foreground">
-                    {d.count} de {PRACTICE_IDS.length} práticas
+                    {d.count} de {target} práticas · {d.rate}% de cumprimento
                     {d.full && " · 🌟 dia completo"}
                   </p>
                 </div>
@@ -252,6 +294,11 @@ export function HistoryView() {
                     >
                       <span>{p.icon}</span>
                       <span>{p.label}</span>
+                      {timeOf.get(`${d.date}|${p.id}`) && (
+                        <span className="text-muted-foreground">
+                          {timeOf.get(`${d.date}|${p.id}`)}
+                        </span>
+                      )}
                     </span>
                   ))}
                 </div>
