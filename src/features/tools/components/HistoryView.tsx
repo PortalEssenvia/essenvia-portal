@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { PRACTICES, PRACTICE_IDS, MORNING_PRACTICES, NIGHT_PRACTICES, localDateKey } from "../constants";
+import { PRACTICES, MORNING_PRACTICES, NIGHT_PRACTICES, localDateKey } from "../constants";
 import type { PracticeId } from "../types";
 import { cn } from "@/lib/utils";
 import {
