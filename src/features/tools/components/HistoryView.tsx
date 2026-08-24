@@ -202,6 +202,9 @@ export function HistoryView() {
       {/* Night streak */}
       <NightStreakCard logs={allLogs} />
 
+      {/* Night trend */}
+      <NightTrendCard />
+
       {/* Evolution chart */}
       <Card className="p-6 bg-card border-bege shadow-soft">
         <h4 className="font-display text-lg text-verde-profundo mb-4">Evolução diária</h4>
