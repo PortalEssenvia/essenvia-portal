@@ -6,6 +6,7 @@ import { PRACTICES, MORNING_PRACTICES, NIGHT_PRACTICES, localDateKey } from "../
 import type { PracticeId } from "../types";
 import { cn } from "@/lib/utils";
 import { NightStreakCard } from "./NightStreakCard";
+import { NightTrendCard } from "./NightTrendCard";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   BarChart, Bar, Legend,
