@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Download, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { PRACTICES, MORNING_PRACTICES, NIGHT_PRACTICES, localDateKey } from "../constants";
@@ -7,10 +9,13 @@ import type { PracticeId } from "../types";
 import { cn } from "@/lib/utils";
 import { NightStreakCard } from "./NightStreakCard";
 import { NightTrendCard } from "./NightTrendCard";
+import { DayDetailDialog, type DayDetail } from "./DayDetailDialog";
+import { downloadCsv, downloadPdf } from "../lib/exportHistory";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   BarChart, Bar, Legend,
 } from "recharts";
+
 
 type Range = 7 | 30 | 90;
 type PeriodFilter = "todas" | "manha" | "noite";
@@ -135,6 +140,34 @@ export function HistoryView() {
       }));
   }, [series, byDate, scopePractices, target]);
 
+  // Day detail dialog
+  const [detail, setDetail] = useState<DayDetail | null>(null);
+  const openDay = (date: string) =>
+    setDetail({ date, done: byDate.get(date) ?? new Set<PracticeId>(), times: timeOf });
+
+  const periodLabel = period === "manha" ? "Manhã" : period === "noite" ? "Noite" : "Todas";
+  const stamp = localDateKey(new Date());
+
+  const exportHeaders = ["Data", "Concluídas", "Meta", "Cumprimento (%)", "Práticas"];
+  const exportRows = useMemo(
+    () =>
+      series
+        .slice()
+        .reverse()
+        .map((d) => ({
+          Data: d.date,
+          "Concluídas": d.count,
+          Meta: target,
+          "Cumprimento (%)": d.rate,
+          "Práticas": scopePractices
+            .filter((p) => byDate.get(d.date)?.has(p.id))
+            .map((p) => p.label)
+            .join(", "),
+        })),
+    [series, byDate, scopePractices, target]
+  );
+
+
   return (
     <div className="space-y-6">
       {/* Range selector */}
@@ -207,10 +240,20 @@ export function HistoryView() {
 
       {/* Evolution chart */}
       <Card className="p-6 bg-card border-bege shadow-soft">
-        <h4 className="font-display text-lg text-verde-profundo mb-4">Evolução diária</h4>
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <h4 className="font-display text-lg text-verde-profundo">Evolução diária</h4>
+          <p className="text-xs text-muted-foreground">Clique em um dia para ver os detalhes</p>
+        </div>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={series} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>
+            <LineChart
+              data={series}
+              margin={{ top: 8, right: 16, left: -16, bottom: 0 }}
+              onClick={(s: any) => {
+                const d = s?.activePayload?.[0]?.payload;
+                if (d?.date) openDay(d.date);
+              }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
               <YAxis
@@ -267,7 +310,36 @@ export function HistoryView() {
 
       {/* Detailed history list */}
       <Card className="p-6 bg-card border-bege shadow-soft">
-        <h4 className="font-display text-lg text-verde-profundo mb-4">Dias anteriores</h4>
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <h4 className="font-display text-lg text-verde-profundo">Dias anteriores</h4>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadCsv(`historico-${period}-${range}d-${stamp}.csv`, exportHeaders, exportRows)
+              }
+            >
+              <Download className="h-4 w-4 mr-1" /> CSV
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadPdf(
+                  `historico-${period}-${range}d-${stamp}.pdf`,
+                  "Histórico de práticas",
+                  `Período: ${periodLabel} · Últimos ${range} dias · Aderência ${adherence}%`,
+                  [{ title: "Resumo diário", headers: exportHeaders, rows: exportRows }]
+                )
+              }
+            >
+              <FileText className="h-4 w-4 mr-1" /> PDF
+            </Button>
+          </div>
+        </div>
         {loading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
         ) : historyList.length === 0 ? (
@@ -279,8 +351,12 @@ export function HistoryView() {
             {historyList.map((d) => (
               <li
                 key={d.date}
+                role="button"
+                tabIndex={0}
+                onClick={() => openDay(d.date)}
+                onKeyDown={(e) => e.key === "Enter" && openDay(d.date)}
                 className={cn(
-                  "p-4 rounded-xl border flex flex-wrap items-center gap-3",
+                  "p-4 rounded-xl border flex flex-wrap items-center gap-3 cursor-pointer transition-smooth hover:border-dourado",
                   d.full
                     ? "bg-verde-medio/10 border-verde-medio/60"
                     : "bg-bege-claro/50 border-bege"
@@ -315,6 +391,13 @@ export function HistoryView() {
           </ul>
         )}
       </Card>
+
+      <DayDetailDialog
+        detail={detail}
+        practices={scopePractices}
+        onClose={() => setDetail(null)}
+        scopeLabel={period === "noite" ? "práticas da noite" : period === "manha" ? "práticas da manhã" : "práticas"}
+      />
     </div>
   );
 }
