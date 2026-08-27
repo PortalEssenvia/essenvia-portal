@@ -351,8 +351,12 @@ export function HistoryView() {
             {historyList.map((d) => (
               <li
                 key={d.date}
+                role="button"
+                tabIndex={0}
+                onClick={() => openDay(d.date)}
+                onKeyDown={(e) => e.key === "Enter" && openDay(d.date)}
                 className={cn(
-                  "p-4 rounded-xl border flex flex-wrap items-center gap-3",
+                  "p-4 rounded-xl border flex flex-wrap items-center gap-3 cursor-pointer transition-smooth hover:border-dourado",
                   d.full
                     ? "bg-verde-medio/10 border-verde-medio/60"
                     : "bg-bege-claro/50 border-bege"
