@@ -240,10 +240,20 @@ export function HistoryView() {
 
       {/* Evolution chart */}
       <Card className="p-6 bg-card border-bege shadow-soft">
-        <h4 className="font-display text-lg text-verde-profundo mb-4">Evolução diária</h4>
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <h4 className="font-display text-lg text-verde-profundo">Evolução diária</h4>
+          <p className="text-xs text-muted-foreground">Clique em um dia para ver os detalhes</p>
+        </div>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={series} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>
+            <LineChart
+              data={series}
+              margin={{ top: 8, right: 16, left: -16, bottom: 0 }}
+              onClick={(s: any) => {
+                const d = s?.activePayload?.[0]?.payload;
+                if (d?.date) openDay(d.date);
+              }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
               <YAxis
