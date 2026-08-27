@@ -391,6 +391,13 @@ export function HistoryView() {
           </ul>
         )}
       </Card>
+
+      <DayDetailDialog
+        detail={detail}
+        practices={scopePractices}
+        onClose={() => setDetail(null)}
+        scopeLabel={period === "noite" ? "práticas da noite" : period === "manha" ? "práticas da manhã" : "práticas"}
+      />
     </div>
   );
 }
