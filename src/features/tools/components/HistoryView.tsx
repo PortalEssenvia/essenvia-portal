@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Download, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { PRACTICES, MORNING_PRACTICES, NIGHT_PRACTICES, localDateKey } from "../constants";
@@ -7,10 +9,13 @@ import type { PracticeId } from "../types";
 import { cn } from "@/lib/utils";
 import { NightStreakCard } from "./NightStreakCard";
 import { NightTrendCard } from "./NightTrendCard";
+import { DayDetailDialog, type DayDetail } from "./DayDetailDialog";
+import { downloadCsv, downloadPdf } from "../lib/exportHistory";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   BarChart, Bar, Legend,
 } from "recharts";
+
 
 type Range = 7 | 30 | 90;
 type PeriodFilter = "todas" | "manha" | "noite";
