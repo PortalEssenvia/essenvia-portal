@@ -310,7 +310,36 @@ export function HistoryView() {
 
       {/* Detailed history list */}
       <Card className="p-6 bg-card border-bege shadow-soft">
-        <h4 className="font-display text-lg text-verde-profundo mb-4">Dias anteriores</h4>
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <h4 className="font-display text-lg text-verde-profundo">Dias anteriores</h4>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadCsv(`historico-${period}-${range}d-${stamp}.csv`, exportHeaders, exportRows)
+              }
+            >
+              <Download className="h-4 w-4 mr-1" /> CSV
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                downloadPdf(
+                  `historico-${period}-${range}d-${stamp}.pdf`,
+                  "Histórico de práticas",
+                  `Período: ${periodLabel} · Últimos ${range} dias · Aderência ${adherence}%`,
+                  [{ title: "Resumo diário", headers: exportHeaders, rows: exportRows }]
+                )
+              }
+            >
+              <FileText className="h-4 w-4 mr-1" /> PDF
+            </Button>
+          </div>
+        </div>
         {loading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
         ) : historyList.length === 0 ? (
