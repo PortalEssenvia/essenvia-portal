@@ -27,6 +27,14 @@ import Depoimentos from "./pages/Depoimentos";
 import Comunidade  from "./pages/Comunidade";
 import Entrar      from "./pages/Entrar";
 import NotFound    from "./pages/NotFound";
+import { AdminRoute } from "@/components/AdminRoute";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminPaginas from "./pages/admin/AdminPaginas";
+import AdminBlog from "./pages/admin/AdminBlog";
+import AdminVideos from "./pages/admin/AdminVideos";
+import AdminDepoimentos from "./pages/admin/AdminDepoimentos";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
 
 // ─── Context para DailyCheck ──────────────────────────────────────────────────
 
@@ -91,6 +99,14 @@ const App = () => (
                 <Route path="/depoimentos" element={<Depoimentos />} />
                 <Route path="/comunidade"  element={<Comunidade />} />
                 <Route path="/entrar"      element={<Entrar />} />
+              </Route>
+              <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="paginas" element={<AdminPaginas />} />
+                <Route path="blog" element={<AdminBlog />} />
+                <Route path="videos" element={<AdminVideos />} />
+                <Route path="depoimentos" element={<AdminDepoimentos />} />
+                <Route path="analytics" element={<AdminAnalytics />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
