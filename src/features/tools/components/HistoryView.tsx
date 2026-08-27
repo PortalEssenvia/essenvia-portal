@@ -140,6 +140,34 @@ export function HistoryView() {
       }));
   }, [series, byDate, scopePractices, target]);
 
+  // Day detail dialog
+  const [detail, setDetail] = useState<DayDetail | null>(null);
+  const openDay = (date: string) =>
+    setDetail({ date, done: byDate.get(date) ?? new Set<PracticeId>(), times: timeOf });
+
+  const periodLabel = period === "manha" ? "Manhã" : period === "noite" ? "Noite" : "Todas";
+  const stamp = localDateKey(new Date());
+
+  const exportHeaders = ["Data", "Concluídas", "Meta", "Cumprimento (%)", "Práticas"];
+  const exportRows = useMemo(
+    () =>
+      series
+        .slice()
+        .reverse()
+        .map((d) => ({
+          Data: d.date,
+          "Concluídas": d.count,
+          Meta: target,
+          "Cumprimento (%)": d.rate,
+          "Práticas": scopePractices
+            .filter((p) => byDate.get(d.date)?.has(p.id))
+            .map((p) => p.label)
+            .join(", "),
+        })),
+    [series, byDate, scopePractices, target]
+  );
+
+
   return (
     <div className="space-y-6">
       {/* Range selector */}
