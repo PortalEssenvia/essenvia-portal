@@ -15,6 +15,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout/Layout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SessionExpiredGate } from "@/components/SessionExpiredGate";
 import { useDailyCheck, type DailyCheckState } from "@/hooks/useDailyCheck";
 
 import Home        from "./pages/Home";
@@ -88,6 +89,7 @@ const App = () => (
         <AuthProvider>
           {/* DailyCheckProvider dentro do AuthProvider para ter acesso ao user */}
           <DailyCheckProvider>
+            <SessionExpiredGate />
             <Routes>
               <Route element={<Layout />}>
                 <Route path="/"            element={<Home />} />
