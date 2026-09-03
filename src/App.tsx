@@ -89,6 +89,7 @@ const App = () => (
         <AuthProvider>
           {/* DailyCheckProvider dentro do AuthProvider para ter acesso ao user */}
           <DailyCheckProvider>
+            <SessionExpiredGate />
             <Routes>
               <Route element={<Layout />}>
                 <Route path="/"            element={<Home />} />
