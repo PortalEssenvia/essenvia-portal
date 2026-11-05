@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu, X, LogOut, ChevronDown,
@@ -286,7 +287,7 @@ export const Header = () => {
       </div>
 
       {/* ── Menu mobile ── */}
-      {open && (
+      {open && createPortal(
         <div className="lg:hidden fixed inset-0 z-[60] bg-verde-profundo flex flex-col animate-fade-in" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="flex items-center justify-between px-4 h-16 border-b border-dourado/20" style={{ paddingTop: "env(safe-area-inset-top)" }}>
             {user ? (
@@ -358,7 +359,8 @@ export const Header = () => {
               </Button>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );

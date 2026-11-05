@@ -165,7 +165,7 @@ const Programas = () => (
         <p className="text-bege/80 mb-10 text-lg">
           A renovação acontece quando a pessoa assume conscientemente a responsabilidade pelo seu crescimento.
         </p>
-        <Button asChild variant="hero" size="lg">
+        <Button asChild variant="hero" size="lg" className="w-full sm:w-auto whitespace-normal h-auto min-h-12">
           <Link to="/entrar">Quero começar minha renovação</Link>
         </Button>
       </div>
