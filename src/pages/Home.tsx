@@ -128,7 +128,7 @@ const Home = () => {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap items-center gap-4 animate-slide-up delay-200">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4 animate-slide-up delay-200">
               <Button
                 asChild
                 variant="gold"
