@@ -125,7 +125,7 @@ const Programas = () => (
             <span className="text-xs text-muted-foreground mb-3">{p.tag}</span>
             <h3 className="font-display text-2xl text-verde-profundo mb-3">{p.title}</h3>
             <p className="text-muted-foreground mb-6 flex-1">{p.desc}</p>
-            <Button asChild variant="outlineGold" className="self-start">
+            <Button asChild variant="outlineGold" className="self-start max-w-full whitespace-normal h-auto min-h-[44px]">
               <Link to="/metodo">Saiba mais</Link>
             </Button>
           </Card>
