@@ -133,7 +133,7 @@ const Home = () => {
                 asChild
                 variant="gold"
                 size="lg"
-                className="rounded-full px-8 font-semibold shadow-gold text-base animate-pulse-gold"
+                className="w-full sm:w-auto h-12 rounded-full px-8 font-semibold shadow-gold text-base animate-pulse-gold"
               >
                 <Link to="/entrar">
                   Comece sua Renovação
@@ -144,7 +144,7 @@ const Home = () => {
                 asChild
                 variant="ghost"
                 size="lg"
-                className="rounded-full px-8 border border-white/30 text-white hover:bg-white/10 hover:text-white text-base"
+                className="w-full sm:w-auto h-12 rounded-full px-8 border border-white/30 text-white hover:bg-white/10 hover:text-white text-base"
               >
                 <Link to="/metodo">Conheça o Método</Link>
               </Button>
