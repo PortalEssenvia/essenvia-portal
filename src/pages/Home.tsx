@@ -113,7 +113,7 @@ const Home = () => {
             </div>
 
             {/* H1 */}
-            <h1 id="hero-title" className="font-display text-4xl sm:text-5xl md:text-6xl xl:text-7xl text-white leading-[1.08] mb-6 animate-slide-up">
+            <h1 id="hero-title" className="font-display text-3xl sm:text-5xl lg:text-7xl text-white leading-[1.08] mb-6 animate-slide-up">
               Renove suas{" "}
               <span className="text-gradient-gold">emoções</span>.{" "}
               <br className="hidden sm:block" />
@@ -338,7 +338,7 @@ const Home = () => {
 
         <div className="container relative z-10 text-center max-w-2xl">
           <div className="eyebrow-pill mb-6 mx-auto w-fit">Lema do Método</div>
-          <h2 className="font-display text-3xl md:text-5xl text-white mb-4 leading-tight">
+          <h2 className="font-display text-2xl sm:text-3xl lg:text-5xl text-white mb-4 leading-tight">
             "Não buscamos apenas aliviar dores emocionais."
           </h2>
           <p className="text-bege/75 mb-10 text-lg leading-relaxed">

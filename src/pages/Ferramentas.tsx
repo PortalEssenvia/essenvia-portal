@@ -190,7 +190,7 @@ const Ferramentas = () => {
 
             <TabsContent value="praticas" className="space-y-8">
               <SleepWindowCard value={sleep} onChange={(v, recalc) => setSleepWindow(v, recalc)} />
-              <div className="grid lg:grid-cols-10 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
                 {/* LEFT 70% */}
                 <div className="lg:col-span-7 space-y-6">
                   <Card className="p-6 md:p-8 bg-card shadow-soft border-bege">
