@@ -156,7 +156,7 @@ const Programas = () => (
     </section>
 
     {/* CTA */}
-    <section className="py-24 bg-gradient-deep">
+    <section className="py-14 md:py-24 bg-gradient-deep">
       <div className="container max-w-2xl text-center">
         <p className="text-dourado tracking-[0.3em] uppercase text-xs mb-4">Comece hoje</p>
         <h2 className="font-display text-4xl text-bege-claro mb-6">

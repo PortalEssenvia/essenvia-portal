@@ -209,7 +209,7 @@ const Home = () => {
       </section>
 
       {/* ── 3 PILARES ─────────────────────────────────────── */}
-      <section aria-label="Pilares do método" className="py-24 bg-gradient-soft">
+      <section aria-label="Pilares do método" className="py-14 md:py-24 bg-gradient-soft">
         <div className="container">
           <SectionHeader
             eyebrow="O Método RC"
@@ -234,7 +234,7 @@ const Home = () => {
       </section>
 
       {/* ── ETAPAS ────────────────────────────────────────── */}
-      <section aria-label="Etapas do processo" className="py-24 bg-white">
+      <section aria-label="Etapas do processo" className="py-14 md:py-24 bg-white">
         <div className="container">
           <SectionHeader
             eyebrow="Processo Terapêutico"
@@ -266,7 +266,7 @@ const Home = () => {
       </section>
 
       {/* ── BENEFÍCIOS ────────────────────────────────────── */}
-      <section aria-label="Benefícios" className="py-24 bg-gradient-soft">
+      <section aria-label="Benefícios" className="py-14 md:py-24 bg-gradient-soft">
         <div className="container">
           <SectionHeader
             eyebrow="Benefícios"
@@ -289,7 +289,7 @@ const Home = () => {
       </section>
 
       {/* ── DEPOIMENTOS ───────────────────────────────────── */}
-      <section aria-label="Depoimentos" className="py-24 bg-verde-profundo">
+      <section aria-label="Depoimentos" className="py-14 md:py-24 bg-verde-profundo">
         <div className="container">
           <SectionHeader
             eyebrow="Histórias reais"
