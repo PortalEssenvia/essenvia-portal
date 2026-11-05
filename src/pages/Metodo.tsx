@@ -202,12 +202,12 @@ const Metodo = () => {
     </h2>
     {pillars.map((p, i) => (
       <section key={p.title} className={`py-20 ${i % 2 === 0 ? "bg-background" : "bg-bege-claro"}`}>
-        <div className="container grid lg:grid-cols-2 gap-12 items-center">
+        <div className="container grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <div className={i % 2 === 1 ? "lg:order-2" : ""}>
-            <div className={`bg-gradient-to-br ${p.color} rounded-3xl p-12 border border-bege relative overflow-hidden`}>
-              <div className="text-dourado/30 font-display text-[10rem] leading-none absolute -top-4 -right-2">{p.n}</div>
+            <div className={`bg-gradient-to-br ${p.color} rounded-3xl p-6 sm:p-12 border border-bege relative overflow-hidden`}>
+              <div className="text-dourado/30 font-display text-[5rem] sm:text-[10rem] leading-none absolute -top-4 -right-2">{p.n}</div>
               <p.icon className="w-14 h-14 text-verde-profundo mb-6 relative" />
-              <h3 className="font-display text-4xl text-verde-profundo relative mb-2">PILAR {p.n}</h3>
+              <h3 className="font-display text-2xl sm:text-4xl text-verde-profundo relative mb-2">PILAR {p.n}</h3>
               <p className="font-display text-3xl text-dourado relative">{p.title}</p>
               <p className="text-sm text-muted-foreground mt-3 relative">Base: {p.base}</p>
             </div>
@@ -246,7 +246,7 @@ const Metodo = () => {
     </div>
 
     {/* 7 ETAPAS DO PROCESSO TERAPÊUTICO */}
-    <section className="py-24 bg-gradient-deep">
+    <section className="py-14 md:py-24 bg-gradient-deep">
       <div className="container">
         <SectionHeader
           eyebrow="Processo Terapêutico"
@@ -266,7 +266,7 @@ const Metodo = () => {
     </section>
 
     {/* PROTOCOLO 12 SESSÕES */}
-    <section className="py-24 bg-bege-claro">
+    <section className="py-14 md:py-24 bg-bege-claro">
       <div className="container max-w-5xl">
         <SectionHeader
           eyebrow="Protocolo Oficial"
@@ -285,7 +285,7 @@ const Metodo = () => {
     </section>
 
     {/* ROTINA DIÁRIA */}
-    <section className="py-24 bg-gradient-soft">
+    <section className="py-14 md:py-24 bg-gradient-soft">
       <div className="container max-w-4xl text-center">
         <RefreshCw className="w-12 h-12 text-dourado mx-auto mb-6" />
         <p className="text-dourado tracking-[0.3em] uppercase text-xs mb-3">Rotina Diária MRC</p>
@@ -315,7 +315,7 @@ const Metodo = () => {
     </section>
 
     {/* PILAR CONTÍNUO */}
-    <section className="py-24 bg-gradient-deep">
+    <section className="py-14 md:py-24 bg-gradient-deep">
       <div className="container max-w-4xl text-center">
         <Sparkles className="w-12 h-12 text-dourado mx-auto mb-6" />
         <p className="text-dourado tracking-[0.3em] uppercase text-xs mb-3">Missão do Método</p>
@@ -330,14 +330,14 @@ const Metodo = () => {
     </section>
 
     {/* PLANOS */}
-    <section className="py-24 bg-background">
+    <section className="py-14 md:py-24 bg-background">
       <div className="container">
         <SectionHeader eyebrow="Planos" title="Escolha seu caminho de renovação" />
         <div className="grid md:grid-cols-3 gap-6 mt-16 max-w-5xl mx-auto">
           {plans.map((pl) => (
             <Card
               key={pl.name}
-              className={`p-8 ${pl.featured ? "bg-gradient-deep text-bege-claro border-dourado scale-105 shadow-gold" : "bg-card border-bege"}`}
+              className={`p-8 ${pl.featured ? "bg-gradient-deep text-bege-claro border-dourado lg:scale-105 shadow-gold" : "bg-card border-bege"}`}
             >
               <h3 className={`font-display text-2xl mb-2 ${pl.featured ? "text-dourado" : "text-verde-profundo"}`}>{pl.name}</h3>
               <p className={`text-3xl font-display mb-6 ${pl.featured ? "text-bege-claro" : "text-verde-profundo"}`}>{pl.price}</p>

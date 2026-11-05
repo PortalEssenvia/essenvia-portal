@@ -125,7 +125,7 @@ const Programas = () => (
             <span className="text-xs text-muted-foreground mb-3">{p.tag}</span>
             <h3 className="font-display text-2xl text-verde-profundo mb-3">{p.title}</h3>
             <p className="text-muted-foreground mb-6 flex-1">{p.desc}</p>
-            <Button asChild variant="outlineGold" className="self-start">
+            <Button asChild variant="outlineGold" className="self-start max-w-full whitespace-normal h-auto min-h-[44px]">
               <Link to="/metodo">Saiba mais</Link>
             </Button>
           </Card>
@@ -156,7 +156,7 @@ const Programas = () => (
     </section>
 
     {/* CTA */}
-    <section className="py-24 bg-gradient-deep">
+    <section className="py-14 md:py-24 bg-gradient-deep">
       <div className="container max-w-2xl text-center">
         <p className="text-dourado tracking-[0.3em] uppercase text-xs mb-4">Comece hoje</p>
         <h2 className="font-display text-4xl text-bege-claro mb-6">
@@ -165,7 +165,7 @@ const Programas = () => (
         <p className="text-bege/80 mb-10 text-lg">
           A renovação acontece quando a pessoa assume conscientemente a responsabilidade pelo seu crescimento.
         </p>
-        <Button asChild variant="hero" size="lg">
+        <Button asChild variant="hero" size="lg" className="w-full sm:w-auto whitespace-normal h-auto min-h-12">
           <Link to="/entrar">Quero começar minha renovação</Link>
         </Button>
       </div>

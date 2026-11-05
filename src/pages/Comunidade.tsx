@@ -24,7 +24,7 @@ const Comunidade = () => {
 
   return (
     <>
-      <section className="py-24 md:py-32 bg-gradient-soft min-h-[80vh] flex items-center">
+      <section className="py-14 md:py-24 md:py-32 bg-gradient-soft min-h-[80vh] flex items-center">
         <div className="container max-w-3xl">
           <Card className="p-10 md:p-14 bg-card shadow-soft border-bege text-center">
             <Users className="w-12 h-12 text-dourado mx-auto mb-6" />

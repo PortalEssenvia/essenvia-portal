@@ -113,7 +113,7 @@ const Home = () => {
             </div>
 
             {/* H1 */}
-            <h1 id="hero-title" className="font-display text-4xl sm:text-5xl md:text-6xl xl:text-7xl text-white leading-[1.08] mb-6 animate-slide-up">
+            <h1 id="hero-title" className="font-display text-3xl sm:text-5xl lg:text-7xl text-white leading-[1.08] mb-6 animate-slide-up">
               Renove suas{" "}
               <span className="text-gradient-gold">emoções</span>.{" "}
               <br className="hidden sm:block" />
@@ -128,12 +128,12 @@ const Home = () => {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap items-center gap-4 animate-slide-up delay-200">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4 animate-slide-up delay-200">
               <Button
                 asChild
                 variant="gold"
                 size="lg"
-                className="rounded-full px-8 font-semibold shadow-gold text-base animate-pulse-gold"
+                className="w-full sm:w-auto h-12 rounded-full px-8 font-semibold shadow-gold text-base animate-pulse-gold"
               >
                 <Link to="/entrar">
                   Comece sua Renovação
@@ -144,7 +144,7 @@ const Home = () => {
                 asChild
                 variant="ghost"
                 size="lg"
-                className="rounded-full px-8 border border-white/30 text-white hover:bg-white/10 hover:text-white text-base"
+                className="w-full sm:w-auto h-12 rounded-full px-8 border border-white/30 text-white hover:bg-white/10 hover:text-white text-base"
               >
                 <Link to="/metodo">Conheça o Método</Link>
               </Button>
@@ -209,7 +209,7 @@ const Home = () => {
       </section>
 
       {/* ── 3 PILARES ─────────────────────────────────────── */}
-      <section aria-label="Pilares do método" className="py-24 bg-gradient-soft">
+      <section aria-label="Pilares do método" className="py-14 md:py-24 bg-gradient-soft">
         <div className="container">
           <SectionHeader
             eyebrow="O Método RC"
@@ -234,7 +234,7 @@ const Home = () => {
       </section>
 
       {/* ── ETAPAS ────────────────────────────────────────── */}
-      <section aria-label="Etapas do processo" className="py-24 bg-white">
+      <section aria-label="Etapas do processo" className="py-14 md:py-24 bg-white">
         <div className="container">
           <SectionHeader
             eyebrow="Processo Terapêutico"
@@ -266,7 +266,7 @@ const Home = () => {
       </section>
 
       {/* ── BENEFÍCIOS ────────────────────────────────────── */}
-      <section aria-label="Benefícios" className="py-24 bg-gradient-soft">
+      <section aria-label="Benefícios" className="py-14 md:py-24 bg-gradient-soft">
         <div className="container">
           <SectionHeader
             eyebrow="Benefícios"
@@ -289,7 +289,7 @@ const Home = () => {
       </section>
 
       {/* ── DEPOIMENTOS ───────────────────────────────────── */}
-      <section aria-label="Depoimentos" className="py-24 bg-verde-profundo">
+      <section aria-label="Depoimentos" className="py-14 md:py-24 bg-verde-profundo">
         <div className="container">
           <SectionHeader
             eyebrow="Histórias reais"
@@ -338,7 +338,7 @@ const Home = () => {
 
         <div className="container relative z-10 text-center max-w-2xl">
           <div className="eyebrow-pill mb-6 mx-auto w-fit">Lema do Método</div>
-          <h2 className="font-display text-3xl md:text-5xl text-white mb-4 leading-tight">
+          <h2 className="font-display text-2xl sm:text-3xl lg:text-5xl text-white mb-4 leading-tight">
             "Não buscamos apenas aliviar dores emocionais."
           </h2>
           <p className="text-bege/75 mb-10 text-lg leading-relaxed">

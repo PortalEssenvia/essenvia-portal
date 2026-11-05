@@ -17,31 +17,31 @@ const socials = [
 ];
 
 export const Footer = () => (
-  <footer className="bg-gradient-deep text-bege">
+  <footer className="bg-gradient-deep text-bege" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
     {/* Divider dourado */}
     <div className="divider-gold" />
 
-    <div className="container py-16 grid gap-12 md:grid-cols-12">
+    <div className="container py-12 md:py-16 grid grid-cols-2 gap-8 md:gap-12 md:grid-cols-12">
 
       {/* Marca */}
-      <div className="md:col-span-5">
+      <div className="col-span-2 md:col-span-5">
         <Link to="/" className="flex items-center gap-3 mb-5 group w-fit">
           <img
             src="/logo.png"
             alt="Renovação Constante"
-            className="h-18 w-18 md:h-22 md:w-22 object-contain rounded-full transition-smooth shrink-0"
+            className="h-12 w-12 md:h-20 md:w-20 object-contain rounded-full transition-smooth shrink-0"
           />
           <div className="leading-none pt-[2px]">
-            <p className="font-display text-[17px] tracking-[0.16em] leading-[1.1] text-dourado font-semibold">RENOVAÇÃO</p>
-            <p className="font-display text-[13px] tracking-[0.42em] leading-[1.4] text-bege-claro/80 font-medium">CONSTANTE</p>
+            <p className="font-display text-sm md:text-[17px] tracking-[0.08em] md:tracking-[0.16em] leading-[1.1] text-dourado font-semibold">RENOVAÇÃO</p>
+            <p className="font-display text-[11px] md:text-[13px] tracking-[0.2em] md:tracking-[0.42em] leading-[1.4] text-bege-claro/80 font-medium">CONSTANTE</p>
           </div>
         </Link>
 
-        <p className="text-bege/70 max-w-sm leading-relaxed text-sm mb-6">
+        <p className="text-bege-claro/90 max-w-sm leading-relaxed text-sm mb-6">
           Renove suas emoções. Renove sua história. Renove sua vida.
         </p>
 
-        <p className="text-bege/40 text-xs leading-relaxed max-w-xs italic border-l border-dourado/30 pl-4">
+        <p className="text-bege/80 text-sm leading-relaxed max-w-xs italic border-l border-dourado/30 pl-4">
           "Não buscamos apenas aliviar dores emocionais. Buscamos desenvolver pessoas
           capazes de se renovar continuamente."
         </p>
@@ -87,7 +87,7 @@ export const Footer = () => (
             </a>
           ))}
         </div>
-        <p className="text-bege/40 text-xs">
+        <p className="text-bege/80 text-sm">
           Siga nossas redes para conteúdos diários de renovação emocional e propósito.
         </p>
       </div>

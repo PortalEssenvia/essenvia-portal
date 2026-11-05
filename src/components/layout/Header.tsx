@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu, X, LogOut, ChevronDown,
   Heart, Brain, Compass, Moon, Activity, Zap, Sparkles,
+  Home, BookOpen, PlayCircle, Users, Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,6 +24,11 @@ const baseLinks = [
   { to: "/conteudos", label: "Conteúdos" },
   { to: "/comunidade", label: "Comunidade" },
 ];
+
+const mobileIcons: Record<string, typeof Heart> = {
+  "/": Home, "/metodo": BookOpen, "/programas": Sparkles,
+  "/conteudos": PlayCircle, "/comunidade": Users, "/ferramentas": Wrench,
+};
 
 const pilaresMenu = [
   { icon: Heart,    title: "Renovação Emocional",  desc: "Reprocessar cargas com a TRG." },
@@ -78,6 +85,15 @@ export const Header = () => {
 
   useEffect(() => setOpen(false), [location.pathname]);
 
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", onKey); };
+  }, [open]);
+
   const isOnDarkHero = !scrolled && location.pathname === "/";
 
   return (
@@ -92,12 +108,12 @@ export const Header = () => {
             : "bg-bege-claro/90 backdrop-blur-md border-b border-bege"
       )}
     >
-      <div className="container flex items-center justify-between h-[84px]">
+      <div className="container flex items-center justify-between h-16 lg:h-[90px] gap-3">
 
         {/* ── Logo ── */}
         <Link
           to="/"
-          className="flex items-center gap-3 shrink-0 py-1 group"
+          className="flex items-center gap-2 lg:gap-3 min-w-0 py-1 group"
           aria-label="Renovação Constante — Início"
         >
           <div className="relative shrink-0">
@@ -106,14 +122,14 @@ export const Header = () => {
               alt=""
               aria-hidden="true"
               className={cn(
-                "h-20 w-20 md:h-24 md:w-24 object-contain rounded-full transition-smooth group-hover:scale-[1.03]"
+                "h-11 w-11 lg:h-20 lg:w-20 object-contain rounded-full transition-smooth group-hover:scale-[1.03]"
               )}
             />
           </div>
           <div className="flex flex-col leading-none pt-[2px]">
             <span
               className={cn(
-                "font-display text-[17px] md:text-[19px] tracking-[0.16em] font-semibold leading-[1.1] transition-smooth",
+                "font-display text-sm lg:text-[19px] tracking-[0.08em] lg:tracking-[0.16em] font-semibold leading-[1.1] transition-smooth",
                 scrolled || !isOnDarkHero
                   ? "text-verde-profundo"
                   : "text-dourado"
@@ -123,7 +139,7 @@ export const Header = () => {
             </span>
             <span
               className={cn(
-                "font-display text-[13px] md:text-[14px] tracking-[0.42em] font-medium leading-[1.4] transition-smooth",
+                "font-display text-[11px] lg:text-[14px] tracking-[0.2em] lg:tracking-[0.42em] font-medium leading-[1.4] transition-smooth",
                 scrolled || !isOnDarkHero
                   ? "text-verde-medio"
                   : "text-bege-claro"
@@ -259,59 +275,92 @@ export const Header = () => {
           aria-label={open ? "Fechar menu" : "Abrir menu"}
           aria-expanded={open}
           className={cn(
-            "lg:hidden p-2 rounded-lg transition-smooth",
+            "lg:hidden shrink-0 flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg transition-smooth",
             scrolled || !isOnDarkHero
               ? "text-verde-profundo hover:bg-bege"
               : "text-bege-claro hover:bg-white/10"
           )}
           onClick={() => setOpen((v) => !v)}
         >
-          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          <Menu className="w-6 h-6" />
         </button>
       </div>
 
       {/* ── Menu mobile ── */}
-      {open && (
-        <div className="lg:hidden bg-bege-claro/97 backdrop-blur-md border-t border-bege animate-slide-down">
-          <nav className="container flex flex-col py-5 gap-1" aria-label="Mobile">
-            {links.map((l) => (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                end={l.to === "/"}
-                className={({ isActive }) =>
-                  cn(
-                    "py-3 px-4 rounded-xl text-base font-medium transition-smooth",
-                    isActive
-                      ? "bg-dourado/10 text-dourado"
-                      : "text-verde-profundo hover:bg-bege hover:text-dourado"
-                  )
-                }
-              >
-                {l.label}
-              </NavLink>
-            ))}
-            <div className="pt-3 mt-1 border-t border-bege">
-              {user ? (
-                <div className="space-y-2">
-                  <button
-                    onClick={() => navigate("/ferramentas")}
-                    className="w-full py-3 px-4 rounded-xl text-left text-base font-medium text-verde-profundo hover:bg-bege transition-smooth"
-                  >
-                    Minhas Práticas
-                  </button>
-                  <Button variant="ghost" size="lg" className="w-full text-red-500" onClick={handleSignOut}>
-                    <LogOut className="w-4 h-4 mr-2" />Sair
-                  </Button>
+      {open && createPortal(
+        <div className="lg:hidden fixed inset-0 z-[60] bg-verde-profundo flex flex-col animate-fade-in" role="dialog" aria-modal="true" aria-label="Menu">
+          <div className="flex items-center justify-between px-4 h-16 border-b border-dourado/20" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+            {user ? (
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-full bg-gradient-gold flex items-center justify-center text-verde-profundo font-bold shrink-0">
+                  {displayName.charAt(0).toUpperCase()}
                 </div>
-              ) : (
-                <Button asChild variant="gold" size="lg" className="w-full rounded-xl font-semibold">
-                  <Link to="/entrar">Comece sua Renovação</Link>
-                </Button>
-              )}
-            </div>
+                <span className="text-bege-claro font-medium truncate">Olá, {displayName}</span>
+              </div>
+            ) : (
+              <span className="font-display text-dourado tracking-wide">Menu</span>
+            )}
+            <button aria-label="Fechar menu" onClick={() => setOpen(false)} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-bege-claro hover:bg-white/10">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <nav className="flex-1 overflow-y-auto px-4 py-2" aria-label="Mobile">
+            {links.map((l) => {
+              const Icon = mobileIcons[l.to] ?? Sparkles;
+              if (l.to === "/programas") {
+                return (
+                  <div key={l.to} className="border-b border-white/10">
+                    <button
+                      onClick={() => setPilaresOpen((v) => !v)}
+                      aria-expanded={pilaresOpen}
+                      className="w-full flex items-center gap-3 py-4 text-lg text-white min-h-[44px]"
+                    >
+                      <Icon className="w-5 h-5 text-dourado" />
+                      <span className="flex-1 text-left">{l.label}</span>
+                      <ChevronDown className={cn("w-5 h-5 transition-transform", pilaresOpen && "rotate-180")} />
+                    </button>
+                    {pilaresOpen && (
+                      <div className="pb-3 pl-8 space-y-1">
+                        <Link to="/programas" onClick={() => setOpen(false)} className="block py-3 text-base text-dourado">Ver todos os pilares</Link>
+                        {pilaresMenu.map((p) => (
+                          <Link key={p.title} to="/metodo#pilares" onClick={() => setOpen(false)} className="flex items-center gap-3 py-3 text-base text-white/90">
+                            <p.icon className="w-4 h-4 text-dourado shrink-0" />{p.title}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return (
+                <NavLink
+                  key={l.to}
+                  to={l.to}
+                  end={l.to === "/"}
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    cn("flex items-center gap-3 py-4 text-lg border-b border-white/10 min-h-[44px]", isActive ? "text-dourado" : "text-white")
+                  }
+                >
+                  <Icon className="w-5 h-5 text-dourado" />
+                  {l.label}
+                </NavLink>
+              );
+            })}
           </nav>
-        </div>
+          <div className="px-4 pt-4 border-t border-dourado/20" style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
+            {user ? (
+              <Button variant="outline" size="lg" className="w-full h-12 rounded-xl bg-transparent border-dourado/50 text-bege-claro hover:bg-white/10" onClick={() => { setOpen(false); handleSignOut(); }}>
+                <LogOut className="w-4 h-4 mr-2" />Sair
+              </Button>
+            ) : (
+              <Button asChild variant="gold" size="lg" className="w-full h-12 rounded-xl font-semibold">
+                <Link to="/entrar" onClick={() => setOpen(false)}>Comece sua Renovação</Link>
+              </Button>
+            )}
+          </div>
+        </div>,
+        document.body
       )}
     </header>
   );

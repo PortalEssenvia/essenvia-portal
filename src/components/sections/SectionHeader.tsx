@@ -37,7 +37,7 @@ export const SectionHeader = ({
     <h2
       className={cn(
         "font-display leading-tight mb-5",
-        "text-3xl md:text-4xl lg:text-5xl",
+        "text-2xl sm:text-3xl lg:text-5xl",
         light ? "text-bege-claro" : "text-verde-profundo"
       )}
     >

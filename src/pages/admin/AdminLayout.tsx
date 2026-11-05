@@ -17,13 +17,13 @@ export default function AdminLayout() {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen flex bg-bege-claro">
-      <aside className="w-64 bg-verde-profundo text-bege-claro flex flex-col">
-        <div className="p-6 border-b border-bege-claro/10">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-bege-claro">
+      <aside className="w-full lg:w-64 shrink-0 bg-verde-profundo text-bege-claro flex flex-col">
+        <div className="p-4 lg:p-6 border-b border-bege-claro/10">
           <p className="font-display text-xl">Admin</p>
           <p className="text-xs text-bege/60 mt-1">Nova Essenvia</p>
         </div>
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex lg:flex-col lg:flex-1 gap-2 lg:gap-1 p-3 overflow-x-auto snap-x">
           {items.map((it) => (
             <NavLink
               key={it.to}
@@ -31,7 +31,7 @@ export default function AdminLayout() {
               end={it.end}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                  "flex items-center gap-3 px-3 py-2 min-h-[44px] shrink-0 snap-start whitespace-nowrap rounded-lg text-sm transition-colors",
                   isActive ? "bg-dourado text-verde-profundo font-medium" : "hover:bg-bege-claro/10"
                 )
               }
@@ -41,7 +41,7 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="p-3 border-t border-bege-claro/10 space-y-2">
+        <div className="p-3 border-t border-bege-claro/10 grid grid-cols-2 lg:grid-cols-1 gap-2">
           <Button asChild variant="outline" size="sm" className="w-full bg-transparent text-bege-claro border-bege-claro/30 hover:bg-bege-claro/10">
             <Link to="/"><ArrowLeft className="w-4 h-4 mr-2" />Ver site</Link>
           </Button>
@@ -50,8 +50,8 @@ export default function AdminLayout() {
           </Button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto">
-        <div className="p-6 max-w-7xl mx-auto">
+      <main className="flex-1 min-w-0 overflow-auto">
+        <div className="p-4 md:p-6 max-w-7xl mx-auto">
           <Outlet />
         </div>
       </main>
