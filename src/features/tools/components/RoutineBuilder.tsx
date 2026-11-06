@@ -191,7 +191,7 @@ export function RoutineBuilder({ practicesCfg, practicesDone, onPracticeDone }: 
           <h3 className="font-display text-2xl text-verde-profundo">Minha Rotina</h3>
           <p className="text-sm text-muted-foreground">{completed} de {total} atividades concluídas {minutesUntilNext != null && next && `· próxima em ${minutesUntilNext} min`}</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap w-full sm:w-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild><Button variant="outline" size="sm">📋 Usar template</Button></DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -223,7 +223,7 @@ export function RoutineBuilder({ practicesCfg, practicesDone, onPracticeDone }: 
         </div>
       ) : view === "timeline" ? (
         <div className="relative">
-          <div className="absolute left-16 top-0 bottom-0 w-px bg-bege" />
+          <div className="absolute left-[3.25rem] sm:left-16 top-0 bottom-0 w-px bg-bege" />
           <div className="space-y-3">
             {merged.map((a) => {
               // FIX 02: usa isActivityDone que considera ambas as fontes
@@ -231,17 +231,17 @@ export function RoutineBuilder({ practicesCfg, practicesDone, onPracticeDone }: 
               const cur = isCurrent(a);
               const dur = minutesBetween(a.startTime, a.endTime);
               return (
-                <div key={a.id} className="flex items-start gap-4 relative">
-                  <div className="w-12 text-right pt-3 text-sm font-medium text-verde-medio tabular-nums">{a.startTime}</div>
-                  <div className={cn("w-3 h-3 rounded-full mt-4 z-10 border-2", cur ? "bg-dourado border-dourado animate-pulse" : isDone ? "bg-verde-medio border-verde-medio" : "bg-card border-bege")} />
+                <div key={a.id} className="flex items-start gap-2 sm:gap-4 relative">
+                  <div className="w-10 sm:w-12 shrink-0 text-right pt-3 text-xs sm:text-sm font-medium text-verde-medio tabular-nums">{a.startTime}</div>
+                  <div className={cn("w-3 h-3 shrink-0 rounded-full mt-4 z-10 border-2", cur ? "bg-dourado border-dourado animate-pulse" : isDone ? "bg-verde-medio border-verde-medio" : "bg-card border-bege")} />
                   <div className={cn(
-                    "flex-1 rounded-xl border p-3 transition-smooth",
+                    "flex-1 min-w-0 rounded-xl border p-2.5 sm:p-3 transition-smooth",
                     cur ? "border-dourado bg-dourado/10 shadow-card" : isDone ? "border-verde-medio/40 bg-verde-medio/5" : "border-bege bg-bege-claro/60"
                   )}>
-                    <div className="flex items-start gap-2">
-                      <span className="text-xl">{categoryIcon(a.category)}</span>
+                    <div className="flex flex-wrap items-start gap-2">
+                      <span className="text-lg sm:text-xl shrink-0">{categoryIcon(a.category)}</span>
                       <div className="flex-1 min-w-0">
-                        <p className={cn("font-medium text-verde-profundo", isDone && "line-through opacity-60")}>{a.name}</p>
+                        <p className={cn("font-medium text-verde-profundo break-words", isDone && "line-through opacity-60")}>{a.name}</p>
                         <p className="text-xs text-muted-foreground">{a.startTime} – {a.endTime} · {dur} min · {a.category}</p>
                         {a.notes && <p className="text-xs text-muted-foreground mt-1">{a.notes}</p>}
                       </div>
