@@ -1,3 +1,4 @@
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -18,16 +19,17 @@ interface Props {
 }
 
 export function PracticeDrawer({ open, onOpenChange, meta, active, onActiveChange, done, onComplete, children }: Props) {
+  const isMobile = useIsMobile();
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        side="right"
-        className="w-full sm:max-w-xl md:max-w-2xl overflow-y-auto bg-bege-claro p-0 flex flex-col"
+        side={isMobile ? "bottom" : "right"}
+        className="w-full max-h-[92dvh] rounded-t-2xl sm:max-h-none sm:rounded-none sm:max-w-xl md:max-w-2xl overflow-y-auto bg-bege-claro p-0 flex flex-col"
       >
-        <SheetHeader className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b border-bege px-6 py-4 flex-row items-center justify-between space-y-0">
+        <SheetHeader className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b border-bege px-4 sm:px-6 py-3 sm:py-4 flex-row items-center justify-between gap-2 space-y-0">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{meta.icon}</span>
-            <SheetTitle className="font-display text-2xl text-verde-profundo">{meta.label}</SheetTitle>
+            <span className="text-2xl sm:text-3xl">{meta.icon}</span>
+            <SheetTitle className="font-display text-xl sm:text-2xl text-verde-profundo">{meta.label}</SheetTitle>
           </div>
           <div className="flex items-center gap-2">
             <Label htmlFor="practice-active" className="text-xs text-muted-foreground">
