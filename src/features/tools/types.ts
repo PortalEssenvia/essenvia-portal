@@ -65,7 +65,10 @@ export interface Book {
   video?: MediaFile;
 }
 export interface ReadingData extends PracticeConfigBase {
+  /** @deprecated use `reading` */
   current?: Book;
+  /** Livros em leitura simultânea */
+  reading?: Book[];
   queue: Book[];
   history: Book[];
 }
