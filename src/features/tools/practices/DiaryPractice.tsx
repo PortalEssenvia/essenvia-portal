@@ -33,8 +33,8 @@ export function DiaryPractice({ open, onOpenChange, data, onChange, done, onComp
   const [openId, setOpenId] = useState<string | null>(null);
 
   const save = async () => {
-    await saveEntry();
-    toast.success("📓 Registro de hoje salvo");
+    try { await saveEntry(); toast.success("📓 Registro de hoje salvo"); }
+    catch { toast.error("Não foi possível salvar o diário. Tente novamente."); }
   };
 
   const setAnswer = <K extends keyof DiaryAnswers>(k: K, v: DiaryAnswers[K]) =>
@@ -51,7 +51,7 @@ export function DiaryPractice({ open, onOpenChange, data, onChange, done, onComp
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Como foi seu dia? O que você sentiu, aprendeu, superou hoje?"
-          className="min-h-[200px] bg-bege-claro"
+          className="min-h-[200px] bg-bege-claro text-base"
         />
         <Button onClick={save} className="bg-verde-profundo text-bege-claro">Salvar registro de hoje</Button>
       </Section>
@@ -66,7 +66,7 @@ export function DiaryPractice({ open, onOpenChange, data, onChange, done, onComp
                 <span className="font-display text-2xl text-verde-profundo w-10 text-center">{answers.mood ?? 5}</span>
               </div>
             ) : (
-              <Textarea value={(answers as any)[q.key] || ""} onChange={(e) => setAnswer(q.key as keyof DiaryAnswers, e.target.value as never)} className="bg-bege-claro" />
+              <Textarea value={(answers as any)[q.key] || ""} onChange={(e) => setAnswer(q.key as keyof DiaryAnswers, e.target.value as never)} className="bg-bege-claro text-base" />
             )}
           </div>
         ))}
