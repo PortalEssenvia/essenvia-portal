@@ -130,7 +130,7 @@ export type PracticeId =
   | "oracao" | "afirmacao" | "gratidao" | "atividade"
   | "meditacao" | "leitura" | "visualizacao" | "diario"
   | "telas" | "cafeina" | "relaxamento" | "gratidao_noite"
-  | "respiracao_sono" | "ambiente_sono";
+  | "meditacao_sono" | "ambiente_sono";
 
 export type PracticePeriod = "manha" | "noite";
 

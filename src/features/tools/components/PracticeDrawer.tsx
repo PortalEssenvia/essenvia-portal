@@ -38,13 +38,13 @@ export function PracticeDrawer({ open, onOpenChange, meta, active, onActiveChang
             <Switch id="practice-active" checked={active} onCheckedChange={onActiveChange} />
           </div>
         </SheetHeader>
-        <div className="p-6 space-y-6 flex-1">{children}</div>
+        <div className="p-4 sm:p-6 space-y-6 flex-1 min-w-0">{children}</div>
         <div className="sticky bottom-0 z-10 bg-card/95 backdrop-blur border-t border-bege px-6 py-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-verde-profundo/30 text-verde-profundo hover:bg-bege"
+            className="min-h-11 border-verde-profundo/30 text-verde-profundo hover:bg-bege"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar para práticas

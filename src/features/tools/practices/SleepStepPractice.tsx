@@ -6,6 +6,7 @@ import { ScheduleConfig } from "../components/ScheduleConfig";
 import { Section } from "../components/Section";
 import { NIGHT_GUIDES, PRACTICES } from "../constants";
 import type { PracticeId, SleepStepData } from "../types";
+import { useNightEntry } from "../hooks/useNightEntry";
 
 interface Props {
   id: PracticeId;
@@ -18,12 +19,14 @@ interface Props {
 }
 
 export function SleepStepPractice({ id, open, onOpenChange, data, onChange, done, onComplete }: Props) {
-  const meta = PRACTICES.find((p) => p.id === id)!;
+  const meta = PRACTICES.find((p) => p.id === id);
+  const { entry, update, history, loaded } = useNightEntry(id, done);
   const guide = NIGHT_GUIDES[id] ?? { intro: "", steps: [] };
-  const checked = data.checked ?? [];
+  const checked = entry.checked;
+  if (!meta) return null;
 
   const toggle = (step: string) => {
-    onChange({ checked: checked.includes(step) ? checked.filter((s) => s !== step) : [...checked, step] });
+    update({ checked: checked.includes(step) ? checked.filter((s) => s !== step) : [...checked, step] });
   };
 
   return (
@@ -43,8 +46,8 @@ export function SleepStepPractice({ id, open, onOpenChange, data, onChange, done
       <Section title="Checklist da noite">
         <div className="space-y-3">
           {guide.steps.map((s) => (
-            <label key={s} className="flex items-start gap-3 cursor-pointer">
-              <Checkbox checked={checked.includes(s)} onCheckedChange={() => toggle(s)} className="mt-0.5" />
+            <label key={s} className="flex items-start gap-3 cursor-pointer min-h-11">
+              <Checkbox disabled={!loaded} checked={checked.includes(s)} onCheckedChange={() => toggle(s)} className="mt-0.5" />
               <span className="text-sm text-verde-profundo">{s}</span>
             </label>
           ))}
@@ -57,12 +60,22 @@ export function SleepStepPractice({ id, open, onOpenChange, data, onChange, done
         </Label>
         <Textarea
           rows={3}
-          value={data.notes ?? ""}
-          onChange={(e) => onChange({ notes: e.target.value })}
+          value={entry.notes}
+          disabled={!loaded}
+          className="text-base"
+          onChange={(e) => update({ notes: e.target.value })}
           placeholder="Escreva aqui..."
         />
       </Section>
 
+      <Section title="Noites anteriores" collapsible defaultOpen={false}>
+        {!history.length && <p className="text-sm text-muted-foreground">Seus registros aparecerão aqui.</p>}
+        {history.map((h) => <div key={h.date} className="border-b border-border py-3 space-y-2">
+          <p className="text-sm text-muted-foreground">{new Date(`${h.date}T12:00:00`).toLocaleDateString("pt-BR")}</p>
+          {h.entry.checked.map((s) => <p key={s} className="text-sm">✓ {s}</p>)}
+          <p className="break-words">{h.entry.notes}</p>
+        </div>)}
+      </Section>
       <ScheduleConfig
         startTime={data.startTime}
         endTime={data.endTime}
