@@ -26,9 +26,11 @@ import { MeditationPractice } from "@/features/tools/practices/MeditationPractic
 import { ReadingPractice } from "@/features/tools/practices/ReadingPractice";
 import { VisualizationPractice } from "@/features/tools/practices/VisualizationPractice";
 import { DiaryPractice } from "@/features/tools/practices/DiaryPractice";
+import { useLocalDay } from "@/features/tools/hooks/useLocalDay";
+import { SleepMeditationPractice } from "@/features/tools/practices/SleepMeditationPractice";
 import { SleepStepPractice } from "@/features/tools/practices/SleepStepPractice";
 
-const SLEEP_STEP_IDS: PracticeId[] = ["cafeina", "telas", "relaxamento", "gratidao_noite", "respiracao_sono", "ambiente_sono"];
+const SLEEP_STEP_IDS: PracticeId[] = ["cafeina", "telas", "relaxamento", "ambiente_sono"];
 
 const Ferramentas = () => {
   const { cfg, update, isSaving, setSleepWindow } = usePracticesConfig();
@@ -46,12 +48,15 @@ const Ferramentas = () => {
    * mas todas as comparações de data usam `localDateKey()` ao invés de
    * `toISOString().slice(0,10)` (UTC) para garantir o fuso horário correto.
    */
-  const [now] = useState(new Date());
+  const localDay = useLocalDay();
+  const now = new Date(`${localDay}T12:00:00`);
 
   const handleToggle = (id: PracticeId) => {
     const wasDone = done.includes(id);
+    if (id === "gratidao" || id === "gratidao_noite") { setOpen(id); return; }
     toggle(id);
-    const meta = PRACTICES.find((p) => p.id === id)!;
+    const meta = PRACTICES.find((p) => p.id === id);
+    if (!meta) return;
     if (!wasDone) {
       toast.success(`${meta.icon} ${meta.label} concluída!`);
       celebratePractice();
@@ -68,7 +73,8 @@ const Ferramentas = () => {
   const handleComplete = (id: PracticeId) => {
     if (done.includes(id)) return;
     mark(id);
-    const meta = PRACTICES.find((p) => p.id === id)!;
+    const meta = PRACTICES.find((p) => p.id === id);
+    if (!meta) return;
     toast.success(`${meta.icon} ${meta.label} concluída!`);
     celebratePractice();
     const newCount = done.length + 1;
@@ -225,7 +231,7 @@ const Ferramentas = () => {
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground mb-3">
-                          Rotina de higiene do sono — cada passo prepara o corpo para dormir melhor.
+                          Hoje: {now.toLocaleDateString("pt-BR", { weekday: "short", day: "numeric", month: "long" })}
                         </p>
                         {renderGroup(NIGHT_PRACTICES)}
                       </div>
@@ -336,15 +342,17 @@ const Ferramentas = () => {
       {/* Drawers */}
       <PrayerPractice open={open === "oracao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.oracao} onChange={(p) => update("oracao", p)} done={done.includes("oracao")} onComplete={() => handleComplete("oracao")} />
       <AffirmationsPractice open={open === "afirmacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.afirmacao} onChange={(p) => update("afirmacao", p)} done={done.includes("afirmacao")} onComplete={() => handleComplete("afirmacao")} />
-      <GratitudePractice open={open === "gratidao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.gratidao} onChange={(p) => update("gratidao", p)} done={done.includes("gratidao")} onComplete={() => handleComplete("gratidao")} />
+      <GratitudePractice key={`manha-${localDay}`} open={open === "gratidao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.gratidao} onChange={(p) => update("gratidao", p)} done={done.includes("gratidao")} onComplete={() => handleComplete("gratidao")} />
       <PhysicalPractice open={open === "atividade"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.atividade} onChange={(p) => update("atividade", p)} done={done.includes("atividade")} onComplete={() => handleComplete("atividade")} />
       <MeditationPractice open={open === "meditacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.meditacao} onChange={(p) => update("meditacao", p)} done={done.includes("meditacao")} onComplete={() => handleComplete("meditacao")} />
       <ReadingPractice open={open === "leitura"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.leitura} onChange={(p) => update("leitura", p)} done={done.includes("leitura")} onComplete={() => handleComplete("leitura")} />
       <VisualizationPractice open={open === "visualizacao"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.visualizacao} onChange={(p) => update("visualizacao", p)} done={done.includes("visualizacao")} onComplete={() => handleComplete("visualizacao")} />
-      <DiaryPractice open={open === "diario"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.diario} onChange={(p) => update("diario", p)} done={done.includes("diario")} onComplete={() => handleComplete("diario")} />
+      <DiaryPractice key={`diario-${localDay}`} open={open === "diario"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.diario} onChange={(p) => update("diario", p)} done={done.includes("diario")} onComplete={() => handleComplete("diario")} />
+      <GratitudePractice key={`noite-${localDay}`} period="noite" open={open === "gratidao_noite"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.gratidao_noite} onChange={(p) => update("gratidao_noite", p)} done={done.includes("gratidao_noite")} />
+      <SleepMeditationPractice key={`meditacao-${localDay}`} open={open === "meditacao_sono"} onOpenChange={(o) => !o && setOpen(null)} data={cfg.meditacao_sono} onChange={(p) => update("meditacao_sono", p)} done={done.includes("meditacao_sono")} onComplete={() => handleComplete("meditacao_sono")} />
       {SLEEP_STEP_IDS.map((id) => (
         <SleepStepPractice
-          key={id}
+          key={`${id}-${localDay}`}
           id={id}
           open={open === id}
           onOpenChange={(o) => !o && setOpen(null)}

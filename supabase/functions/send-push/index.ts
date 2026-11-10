@@ -170,7 +170,7 @@ Deno.serve(async (req) => {
       telas: "🌙 Hora de desligar as telas",
       relaxamento: "🛁 Comece seu ritual de relaxamento",
       gratidao_noite: "🙏 Gratidão da noite",
-      respiracao_sono: "🧘 Respiração para dormir",
+      meditacao_sono: "🧘 Meditação para dormir",
       ambiente_sono: "🛏️ Prepare o ambiente do sono",
     };
 

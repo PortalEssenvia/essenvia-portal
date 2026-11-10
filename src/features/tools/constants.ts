@@ -15,7 +15,7 @@ export const PRACTICES: PracticeMeta[] = [
   { id: "diario", icon: "📓", label: "Diário", color: "verde-profundo", period: "noite" },
   { id: "gratidao_noite", icon: "🙏", label: "Gratidão da noite", color: "dourado", period: "noite" },
   { id: "leitura", icon: "📚", label: "Leitura", color: "dourado", period: "noite" },
-  { id: "respiracao_sono", icon: "🧘", label: "Respiração para dormir", color: "verde-profundo", period: "noite" },
+  { id: "meditacao_sono", icon: "🧘", label: "Meditação para dormir", color: "verde-profundo", period: "noite" },
   { id: "ambiente_sono", icon: "🛏️", label: "Ambiente do sono", color: "verde-medio", period: "noite" },
 ];
 
@@ -61,7 +61,7 @@ export const NIGHT_OFFSETS: Record<string, [number, number]> = {
   diario: [50, 40],
   gratidao_noite: [40, 35],
   leitura: [35, 15],
-  respiracao_sono: [15, 10],
+  meditacao_sono: [20, 10],
   ambiente_sono: [10, 5],
 };
 
@@ -111,8 +111,8 @@ export const NIGHT_GUIDES: Record<string, { intro: string; steps: string[] }> = 
       "Agradecer por algo simples do dia",
     ],
   },
-  respiracao_sono: {
-    intro: "Respiração lenta ativa o sistema parassimpático e prepara o corpo para dormir.",
+  meditacao_sono: {
+    intro: "Desacelere a mente e o corpo para um sono profundo.",
     steps: [
       "Respiração 4-7-8 por 4 ciclos",
       "Relaxar o corpo dos pés à cabeça",

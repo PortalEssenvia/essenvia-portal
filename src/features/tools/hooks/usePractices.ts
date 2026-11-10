@@ -8,6 +8,7 @@ import type {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useLocalDay } from "./useLocalDay";
 
 export interface PracticesConfig {
   oracao: PrayerData;
@@ -22,7 +23,7 @@ export interface PracticesConfig {
   cafeina: SleepStepData;
   relaxamento: SleepStepData;
   gratidao_noite: SleepStepData;
-  respiracao_sono: SleepStepData;
+  meditacao_sono: SleepStepData;
   ambiente_sono: SleepStepData;
   sleepWindow: SleepWindow;
 }
@@ -46,7 +47,7 @@ export const defaultConfig = (sleep: SleepWindow = SLEEP_DEFAULTS): PracticesCon
   cafeina: { ...baseCfg("cafeina", sleep), checked: [] },
   relaxamento: { ...baseCfg("relaxamento", sleep), checked: [] },
   gratidao_noite: { ...baseCfg("gratidao_noite", sleep), checked: [] },
-  respiracao_sono: { ...baseCfg("respiracao_sono", sleep), checked: [] },
+  meditacao_sono: { ...baseCfg("meditacao_sono", sleep), checked: [] },
   ambiente_sono: { ...baseCfg("ambiente_sono", sleep), checked: [] },
   sleepWindow: sleep,
 });
@@ -75,7 +76,10 @@ export function usePracticesConfig() {
       }
       const pc = (data as any)?.practices_config as unknown;
       if (pc && typeof pc === "object" && Object.keys(pc as object).length > 0) {
-        setCfg({ ...defaultConfig(), ...(pc as PracticesConfig) });
+        const legacy = pc as PracticesConfig & { respiracao_sono?: SleepStepData };
+        const converted = { ...legacy, meditacao_sono: legacy.meditacao_sono ?? legacy.respiracao_sono ?? defaultConfig().meditacao_sono };
+        delete converted.respiracao_sono;
+        setCfg({ ...defaultConfig(), ...converted });
       } else {
         const { error: updateError } = await supabase
           .from("profiles")
@@ -139,13 +143,14 @@ export function usePracticesConfig() {
 export function useDailyDone() {
   const { user } = useAuth();
   // FIX 01: todayKey() agora usa data local, não UTC
-  const today = todayKey();
+  const today = useLocalDay();
   const [done, setDone] = useState<PracticeId[]>([]);
 
   useEffect(() => {
-    if (!user) { setDone([]); return; }
+    setDone([]);
+    if (!user) return;
     let cancelled = false;
-    (async () => {
+    const load = async () => {
       const { data } = await supabase
         .from("daily_practice_logs")
         .select("practice_key")
@@ -153,9 +158,11 @@ export function useDailyDone() {
         .eq("log_date", today)
         .eq("completed", true);
       if (cancelled) return;
-      setDone(((data ?? []).map((r: any) => r.practice_key as PracticeId)));
-    })();
-    return () => { cancelled = true; };
+      setDone([...new Set((data ?? []).map((r) => r.practice_key === "respiracao_sono" ? "meditacao_sono" : r.practice_key as PracticeId))]);
+    };
+    void load();
+    window.addEventListener("practice-logs-changed", load);
+    return () => { cancelled = true; window.removeEventListener("practice-logs-changed", load); };
   }, [user, today]);
 
   const persistOne = useCallback(async (id: PracticeId, completed: boolean) => {
@@ -408,7 +415,7 @@ async function ensureDiaryRow(user_id: string, date: string) {
 export function useRoutineDone(): [string[], (id: string) => void] {
   const { user } = useAuth();
   // FIX 01: todayKey() agora usa data local
-  const today = todayKey();
+  const today = useLocalDay();
   const [done, setDone] = useState<string[]>([]);
 
   useEffect(() => {
@@ -457,16 +464,17 @@ export function useDiaryEntry(date: string) {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    setText(""); setAnswers({}); setLoaded(false);
     if (!user) return;
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("diary_entries")
         .select("content,answers")
         .eq("user_id", user.id)
         .eq("entry_date", date)
         .maybeSingle();
-      if (cancelled) return;
+      if (cancelled || error) return;
       setText(((data as any)?.content as string) ?? "");
       setAnswers(((data as any)?.answers as Record<string, any>) ?? {});
       setLoaded(true);
@@ -480,7 +488,7 @@ export function useDiaryEntry(date: string) {
       user_id: user.id, entry_date: date, content: text, answers: answers as any,
     }, { onConflict: "user_id,entry_date" });
     if (error) {
-      console.error("[Essenvia] Erro ao salvar diário:", error);
+      throw error;
     }
   }, [user, date, text, answers]);
 
@@ -516,46 +524,3 @@ export function useDiaryHistory(excludeDate?: string) {
   return entries;
 }
 
-/** Today's gratitude text + recent history (stored in diary_entries.gratitude_text). */
-export function useGratitude(date: string) {
-  const { user } = useAuth();
-  const [text, setText] = useState("");
-  const [history, setHistory] = useState<{ date: string; text: string }[]>([]);
-
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    (async () => {
-      const since = new Date();
-      since.setDate(since.getDate() - 14);
-      const { data } = await supabase
-        .from("diary_entries")
-        .select("entry_date,gratitude_text")
-        .eq("user_id", user.id)
-        // FIX 01: usa localDateKey ao invés de toISOString().slice(0,10)
-        .gte("entry_date", localDateKey(since))
-        .order("entry_date", { ascending: false });
-      if (cancelled || !data) return;
-      const today = (data as any[]).find((r) => r.entry_date === date);
-      setText(today?.gratitude_text ?? "");
-      setHistory(
-        (data as any[])
-          .filter((r) => r.entry_date !== date && r.gratitude_text)
-          .map((r) => ({ date: r.entry_date, text: r.gratitude_text }))
-      );
-    })();
-    return () => { cancelled = true; };
-  }, [user, date]);
-
-  const save = useCallback(async (newText: string) => {
-    if (!user) return;
-    const { error } = await supabase.from("diary_entries").upsert({
-      user_id: user.id, entry_date: date, gratitude_text: newText,
-    }, { onConflict: "user_id,entry_date" });
-    if (error) {
-      console.error("[Essenvia] Erro ao salvar gratidão:", error);
-    }
-  }, [user, date]);
-
-  return { text, setText, history, save };
-}
