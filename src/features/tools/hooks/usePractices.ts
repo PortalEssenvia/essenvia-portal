@@ -194,6 +194,7 @@ export function useDailyDone() {
   }, [persistOne]);
 
   const mark = useCallback((id: PracticeId) => {
+    if (id === "gratidao" || id === "gratidao_noite") return;
     setDone((prev) => {
       if (prev.includes(id)) return prev;
       persistOne(id, true);

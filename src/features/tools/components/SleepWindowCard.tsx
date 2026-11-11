@@ -18,7 +18,7 @@ export function SleepWindowCard({ value, onChange }: Props) {
   const short = hours < 7;
 
   const patch = (p: Partial<SleepWindow>) => {
-    onChange({ ...value, ...p });
+    onChange({ ...value, ...p }, true);
     setPending(true);
   };
 
