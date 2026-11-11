@@ -137,6 +137,7 @@ export function RoutineBuilder({ practicesCfg, practicesDone, onPracticeDone }: 
    * a atividade "Oração" em "Minha Rotina" também aparece como concluída.
    */
   const isActivityDone = (a: RoutineActivity): boolean => {
+    if (a.practiceId === "gratidao" || a.practiceId === "gratidao_noite") return practicesDone.includes(a.practiceId);
     if (doneIds.includes(a.id)) return true;
     // Se a atividade tem um practiceId vinculado, verifica se a prática foi concluída
     if (a.practiceId && practicesDone.includes(a.practiceId as PracticeId)) return true;
@@ -150,6 +151,7 @@ export function RoutineBuilder({ practicesCfg, practicesDone, onPracticeDone }: 
    * - Sempre chama `toggleDoneId` para atualizar o estado local da rotina.
    */
   const handleToggleDone = (a: RoutineActivity) => {
+    if (a.practiceId === "gratidao" || a.practiceId === "gratidao_noite") { toast.info("Adicione uma gratidão de hoje para concluir esta prática."); return; }
     toggleDoneId(a.id);
     // FIX 02: sincroniza com "Práticas de Hoje" se houver vínculo
     if (a.practiceId && !practicesDone.includes(a.practiceId as PracticeId)) {

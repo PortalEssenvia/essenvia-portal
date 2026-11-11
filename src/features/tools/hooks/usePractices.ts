@@ -79,6 +79,7 @@ export function usePracticesConfig() {
         const legacy = pc as PracticesConfig & { respiracao_sono?: SleepStepData };
         const converted = { ...legacy, meditacao_sono: legacy.meditacao_sono ?? legacy.respiracao_sono ?? defaultConfig().meditacao_sono };
         delete converted.respiracao_sono;
+        NIGHT_PRACTICES.forEach(({ id }) => { const c = converted[id] as SleepStepData | undefined; if (c && "checked" in c) { const { checked: _checked, notes: _notes, ...schedule } = c; (converted as any)[id] = schedule; } });
         setCfg({ ...defaultConfig(), ...converted });
       } else {
         const { error: updateError } = await supabase
@@ -193,6 +194,7 @@ export function useDailyDone() {
   }, [persistOne]);
 
   const mark = useCallback((id: PracticeId) => {
+    if (id === "gratidao" || id === "gratidao_noite") return;
     setDone((prev) => {
       if (prev.includes(id)) return prev;
       persistOne(id, true);
