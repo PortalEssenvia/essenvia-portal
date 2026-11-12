@@ -16,6 +16,7 @@ export function SessionExpiredGate() {
   useEffect(() => {
     if (!sessionExpired) return;
     clearSessionExpired();
+    if (location.pathname === "/reset-password") return;
     toast({
       title: "Sua sessão expirou",
       description: "Entre novamente para continuar de onde parou.",
