@@ -102,6 +102,7 @@ const App = () => (
                 <Route path="/depoimentos" element={<Depoimentos />} />
                 <Route path="/comunidade"  element={<Comunidade />} />
                 <Route path="/entrar"      element={<Entrar />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
               </Route>
               <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
                 <Route index element={<AdminDashboard />} />
