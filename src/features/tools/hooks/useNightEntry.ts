@@ -39,7 +39,9 @@ export function useNightEntry(id: PracticeId, done: boolean) {
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       queue.current = queue.current.then(async () => {
-        const { error } = await supabase.from("daily_practice_logs").upsert({ user_id: user.id, practice_key: id, log_date: date, notes: JSON.stringify(next) }, { onConflict: "user_id,practice_key,log_date" });
+        const { error: insertError } = await supabase.from("daily_practice_logs").upsert({ user_id: user.id, practice_key: id, log_date: date }, { onConflict: "user_id,practice_key,log_date", ignoreDuplicates: true });
+        if (insertError) { toast.error("Não foi possível salvar suas anotações."); return; }
+        const { error } = await supabase.from("daily_practice_logs").update({ notes: JSON.stringify(next) }).eq("user_id", user.id).eq("practice_key", id).eq("log_date", date);
         if (error) toast.error("Não foi possível salvar suas anotações.");
       });
     }, 400);
