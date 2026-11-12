@@ -5,9 +5,9 @@ import { useNightEntry } from "./hooks/useNightEntry";
 import { useDailyDone, useDiaryEntry } from "./hooks/usePractices";
 import { useGratitudeEntries } from "./hooks/useGratitudeEntries";
 
-const state = vi.hoisted(() => ({ day: "2026-11-10", rows: [] as Record<string, any>[] }));
+const state = vi.hoisted(() => ({ day: "2026-11-10", user: { id: "user" }, rows: [] as Record<string, any>[] }));
 vi.mock("./hooks/useLocalDay", () => ({ useLocalDay: () => state.day }));
-vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "user" } }) }));
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: state.user }) }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: () => {
   const filters: ((r: Record<string, any>) => boolean)[] = [];
   const query: any = {
