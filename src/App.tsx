@@ -27,6 +27,7 @@ import Conteudos   from "./pages/Conteudos";
 import Depoimentos from "./pages/Depoimentos";
 import Comunidade  from "./pages/Comunidade";
 import Entrar      from "./pages/Entrar";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound    from "./pages/NotFound";
 import { AdminRoute } from "@/components/AdminRoute";
 import AdminLayout from "./pages/admin/AdminLayout";
